@@ -1,0 +1,7 @@
+Time to take a short break from the logic puzzles and solve a different kind of logic puzzle! :)
+
+Welcome to the p-beauty contest!
+
+Choose a number between 0 and 100. The winner is the person whose number is closest to 2/3 times the average of all chosen numbers. 
+
+All participants will do the contest. The winner gets a Tony's Chocolonely chocolate bar of their choice!

@@ -1,0 +1,5 @@
+Albert and Bernard just became friends with Cheryl, and they want to know when her birthday is. Cheryl writes down a list of 10 possible dates and tells them that one of them is her birthday:; Cheryl then tells only to Albert the month of her birthday, and tells only to Bernard the day of her birthday. (And Albert and Bernard are aware that she did so.) Everybody knows that Albert, Bernard and Cheryl don't make any reasoning mistakes and never lie. 
+
+Albert and Bernard now have the following conversation:; 
+
+When is Cheryl's birthday?

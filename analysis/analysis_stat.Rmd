@@ -1,0 +1,294 @@
+---
+title: "MSc Thesis Analysis"
+author: "Andreea Minculescu"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+rm(list = ls())
+# make sure to set the correct working direcory
+setwd("C://Users//andre//Desktop//Univ stuff//Year 2//Master Project//Cheryl-Puzzle")
+# Load data:
+dat <- read.csv("All answers_all.csv", na.strings=c("","NA"))
+
+library(plyr)
+library(plotfunctions)
+library(plyr)
+library(lme4)
+library(mgcv)
+library(itsadug)
+library(corrplot)
+library(car)
+library("FSA")
+library("dunn.test")
+```
+
+# Prepare data for analysis
+
+```{r}
+# remove trials where participants ran out of time
+dat <- subset(dat, !is.na(dat$Given.answer))
+
+# separate p-beauty from the rest of the data
+dat_pb <- subset(dat, is.na(dat$Index))
+dat_ans <- subset(dat, !is.na(dat$Index))
+
+# transform data
+dat_ans$logTime <- log(dat_ans$Time)
+dat_ans$Level <- as.factor(dat_ans$Level)
+```
+
+
+```{r}
+# divide df_ans into blocks
+dat_ans$Block <- NA
+dat_ans$Trial <- NA
+for (part in unique(dat_ans$Subject.id)){
+  for (idx in 1:nrow(dat_ans[dat_ans$Subject.id == part,])){
+    dat_ans[dat_ans$Subject.id == part,][idx,]$Block <- ifelse(idx <= 4, 1, 2)
+    dat_ans[dat_ans$Subject.id == part,][idx,]$Trial <- idx
+  }
+}
+
+# create variable to store whether answer is correct: 1 is correct, 0 is wrong
+dat_ans$Is.correct <- ifelse(dat_ans$Correct.answer == dat_ans$Given.answer, 1, 0)
+
+# write.csv(dat_ans, "All answers_puzzles.csv", row.names=FALSE)
+```
+
+
+```{r}
+# create separate dataframe only with participants who finished all 8 trials
+list_remove_part <- c()
+for (part in unique(dat_ans$Subject.id)){
+  temp.df <- subset(dat_ans, dat_ans$Subject.id == part)
+  if (nrow(temp.df) < 8) {
+    list_remove_part <- c(list_remove_part, part)
+  }
+}
+dat_ans_eight_trials <- dat_ans[!dat_ans$Subject.id %in% list_remove_part, ]
+
+# write.csv(dat_ans_eight_trials, "All answers_puzzles all trials.csv", row.names=FALSE)
+```
+
+```{r}
+# visualize log-time
+# distribution looks good
+dat_ans$logTime <- log(dat_ans$Time)
+plot(density(dat_ans$logTime))
+
+```
+
+# Analysis of puzzle results
+
+### Check whether time to solve puzzles for different level of ToM is different
+
+```{r}
+# check whether time to solve puzzles for different levels of ToM is different
+# result: only level 3-level 4 do not differ
+res.aov.level <-aov(logTime ~ Level, data = dat_ans_eight_trials)
+summary(res.aov.level)
+
+TukeyHSD(res.aov.level)
+
+# check ANOVA assumptions -> NOT met
+aov.residuals.level <- residuals(object = res.aov.level)
+# test that the variance is homogenous
+# result: variance is homogenous
+plot(aov.residuals.level)
+leveneTest(logTime ~ Level, data = dat_ans_eight_trials)
+
+# test for normality
+# result: it is not normal
+qqnorm(aov.residuals.level,
+       pch=16, col=alpha("#FFcc00"), bty='n')
+qqline(aov.residuals.level)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov.residuals.level )
+```
+
+```{r}
+# alternative for ANOVA when assumptions not met
+# results: still significant; levels 3-4 become significantly different
+res.kruskal.level <- kruskal.test(logTime ~ Level, data = dat_ans_eight_trials)
+res.kruskal.level
+
+dunnTest(logTime ~ Level, data=dat_ans_eight_trials)
+```
+
+
+### Check whether time to solve puzzles for different scenarios is different
+
+```{r}
+# check whether time to solve puzzles for different level of ToM in block 2 is different
+# result: not significant
+dat_ans_blocktwo <- subset(dat_ans_eight_trials, dat_ans_eight_trials$Block == 2)
+
+res.aov.scen <-aov(logTime ~ Scenario, data = dat_ans_blocktwo)
+summary(res.aov.scen)
+
+TukeyHSD(res.aov.scen)
+
+# check ANOVA assumptions -> NOT met
+aov.residuals.scen <- residuals(object = res.aov.scen)
+# test that the variance is homogenous
+# result: variance is homogenous
+plot(aov.residuals.scen)
+leveneTest(logTime ~ Scenario, data = dat_ans_blocktwo)
+
+# test for normality
+# result: it is not normal
+qqnorm(aov.residuals.scen,
+       pch=16, col=alpha("#FFcc00"), bty='n')
+qqline(aov.residuals.scen)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov.residuals.scen )
+```
+```{r}
+# alternative for ANOVA when assumptions not met
+# results: still not significant
+res.kruskal.scen <- kruskal.test(logTime ~ Scenario, data = dat_ans_blocktwo)
+res.kruskal.scen
+
+dunnTest(logTime ~ Scenario, data=dat_ans_blocktwo)
+```
+
+
+### Check whether there is an interaction between level and scenario
+
+```{r}
+# check whether there is an interaction between level and scenario
+# result: the two main effects are significant, but not the interaction
+res.aov.lev.scen <-aov(logTime ~ Scenario * Level, data = dat_ans_blocktwo)
+summary(res.aov.lev.scen)
+
+# check ANOVA assumptions -> NOT met
+aov.residuals.lev.scen <- residuals(object = res.aov.lev.scen)
+# test that the variance is homogenous
+# result: variance is homogenous
+plot(aov.residuals.lev.scen)
+leveneTest(logTime ~ Scenario * Level, data = dat_ans_blocktwo)
+
+# test for normality
+# result: it is not normal
+qqnorm(aov.residuals.lev.scen,
+       pch=16, col=alpha("#FFcc00"), bty='n')
+qqline(aov.residuals.lev.scen)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov.residuals.lev.scen )
+
+# no equivalent non-parametric test exists so results are unreliable
+```
+
+### Check whether accuracy differs across levels of ToM
+
+```{r}
+# http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r
+# check whether accuracy differs across levels of ToM
+# results: there is significant difference and levels 1 and 4 contribute the most
+acc.table.level <- table(dat_ans_eight_trials$Is.correct, dat_ans_eight_trials$Level)
+
+res.chisq.level <- chisq.test(acc.table.level)
+res.chisq.level
+
+# Contibution in percentage (%)
+contrib.chisq.level <- 100*res.chisq.level$residuals^2/res.chisq.level$statistic
+round(contrib.chisq.level, 3)
+# Visualize the contribution
+corrplot(contrib.chisq.level, is.cor = FALSE)
+```
+
+### Check whether accuracy differs across scenarios
+
+```{r}
+# http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r
+# check whether accuracy differs across scenarios
+# results: there is not significant difference
+acc.table.scen <- table(dat_ans_blocktwo$Is.correct, dat_ans_blocktwo$Scenario)
+
+res.chisq.scen <- chisq.test(acc.table.scen)
+res.chisq.scen
+
+# Contibution in percentage (%)
+contrib.chisq.scen <- 100*res.chisq.scen$residuals^2/res.chisq.scen$statistic
+round(contrib.chisq.scen, 3)
+# Visualize the contribution
+corrplot(contrib.chisq.scen, is.cor = FALSE)
+```
+
+### Check for learning effects
+
+
+```{r}
+# test whether participants performed worse in the first block than in the second
+# results: not significant
+n_first <- nrow(dat_ans[dat_ans$Block == 1,])
+x_first <- nrow(dat_ans[dat_ans$Block == 1 & dat_ans$Is.correct == "1",])
+n_second <- nrow(dat_ans[dat_ans$Block == 2,])
+x_second <- nrow(dat_ans[dat_ans$Block == 2 & dat_ans$Is.correct == "1",])
+
+prop.test(x = c(x_first, x_second), n = c(n_first, n_second), alternative = "less")
+```
+
+
+```{r}
+# test whether participants performed worse in the first two trials than in the last two trials
+# results: significant
+n_first_two <- nrow(dat_ans[dat_ans$Trial < 3,])
+x_first_two <- nrow(dat_ans[dat_ans$Trial < 3 & dat_ans$Is.correct == "1",])
+n_last_two <- nrow(dat_ans[dat_ans$Trial > 6,])
+x_last_two <- nrow(dat_ans[dat_ans$Trial > 6 & dat_ans$Is.correct == "1",])
+
+prop.test(x = c(x_first_two, x_last_two), n = c(n_first_two, n_last_two), alternative = "less")
+```
+
+
+# Analysis of background form answers
+
+```{r}
+# test whether participants who knew the puzzle performed better than those who did not
+# results: significant
+n_know <- nrow(dat_ans[dat_ans$Know.puzzle. == "Yes",])
+x_know <- nrow(dat_ans[dat_ans$Know.puzzle. == "Yes" & dat_ans$Is.correct == "1",])
+n_notKnow <- nrow(dat_ans[dat_ans$Know.puzzle. == "No",])
+x_notKnow <- nrow(dat_ans[dat_ans$Know.puzzle. == "No" & dat_ans$Is.correct == "1",])
+
+prop.test(x = c(x_know, x_notKnow), n = c(n_know, n_notKnow), alternative = "greater")
+```
+
+```{r}
+# test whether perceived low difficulty of instructions improves performance
+# results: not significant
+n_low_instr <- nrow(dat_ans[dat_ans$Difficulty.instructions >= 5,])
+x_low_instr <- nrow(dat_ans[dat_ans$Difficulty.instructions >= 5 & dat_ans$Is.correct == "1",])
+n_high_instr <- nrow(dat_ans[dat_ans$Difficulty.instructions < 5,])
+x_high_instr <- nrow(dat_ans[dat_ans$Difficulty.instructions < 5 & dat_ans$Is.correct == "1",])
+
+prop.test(x = c(x_low_instr, x_high_instr), n = c(n_low_instr, n_high_instr), alternative = "greater")
+```
+
+```{r}
+# test whether perceived low difficulty of puzzles improves performance
+# results: significant
+n_low_puzzle <- nrow(dat_ans[dat_ans$Difficulty.puzzle <= 5,])
+x_low_puzzle <- nrow(dat_ans[dat_ans$Difficulty.puzzle <= 5 & dat_ans$Is.correct == "1",])
+n_high_puzzle <- nrow(dat_ans[dat_ans$Difficulty.puzzle > 5,])
+x_high_puzzle <- nrow(dat_ans[dat_ans$Difficulty.puzzle > 5 & dat_ans$Is.correct == "1",])
+
+prop.test(x = c(x_low_puzzle, x_high_puzzle), n = c(n_low_puzzle, n_high_puzzle), alternative = "greater")
+```
+
+```{r}
+# test whether perceived high enjoyment of puzzle improves performance
+# results: not significant
+n_low_enjoy <- nrow(dat_ans[dat_ans$Enjoy.puzzle <= 5,])
+x_low_enjoy <- nrow(dat_ans[dat_ans$Enjoy.puzzle <= 5 & dat_ans$Is.correct == "1",])
+n_high_enjoy <- nrow(dat_ans[dat_ans$Enjoy.puzzle > 5,])
+x_high_enjoy <- nrow(dat_ans[dat_ans$Enjoy.puzzle > 5 & dat_ans$Is.correct == "1",])
+
+prop.test(x = c(x_low_enjoy, x_high_enjoy), n = c(n_low_enjoy, n_high_enjoy), alternative = "less")
+```
+

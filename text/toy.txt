@@ -1,5 +1,0 @@
-Albert and Bernard just became friends with Cheryl, and they visited her at her house. Albert and Bernard notice that Cheryl has a lot of toys strewn around her room and they ask her what her favourite childhood toy is. Feeling playful, Cheryl tells them they have to guess which is her favourite childhood toy and that she will give them some hints. Albert and Bernard can see the following toys:; Cheryl then tells only to Albert the location of the toy, and tells only to Bernard the type of toy. (And Albert and Bernard are aware that she did so.) Everybody knows that Albert, Bernard and Cheryl don't make any reasoning mistakes and never lie.
-
-Albert and Bernard now have the following conversation:; 
-
-Which is Cheryl's favourite childhood toy?

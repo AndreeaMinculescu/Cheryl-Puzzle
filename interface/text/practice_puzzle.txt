@@ -1,0 +1,13 @@
+You will be asked to solve a series of unrelated puzzles revolving around three friends: Albert, Bernard and Cheryl. Albert, Bernard and Cheryl are all in the same room. Albert and Bernard just met Cheryl and they want to get to know her better - for the sake of this example, suppose they want to know when her birthday is. Cheryl has a very playful personality and hates giving answers outright so, instead she says:
+"I will not tell you but I will give you some hints." She writes down a list of four dates and shows the list to Bernard and Albert: 
+January 11 - January 12 
+February 11 - February 12;
+
+"My birthday is one of these dates." Cheryl says.
+Then Cheryl says that she will whisper in Albert's ear the month of her birthday, and nothing else. To Bernard, she will whisper the day of her birthday, and nothing else. She does as she said. Albert sees her whisper in Bernard's ear but cannot hear what was said (the same is the case for Bernard). However, it is well known by anybody that Albert, Bernard and Cheryl have perfect reasoning abilities and never lie or purposefully deceive each other, so both boys are convinced Cheryl did as she said.;
+
+"Can you figure out my birthday"? Cheryl asks them. Now, the following dialogue ensues.
+Albert: "Bernard, I don't know when Cheryl's birthday is."
+Bernard: "I don't know when Cheryl's birthday is either.";
+
+Once you're sure you understood the puzzle text, click Next to proceed to some comprehension questions.

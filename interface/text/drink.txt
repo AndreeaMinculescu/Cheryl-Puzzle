@@ -1,0 +1,5 @@
+Albert and Bernard just became friends with Cheryl, and they all went out to a cafe. Albert and Bernard ask Cheryl how she likes to have her coffee. Feeling playful, Cheryl writes down a list of 10 possible sizes and temperatures and tells them that they have to guess how she likes her coffee:; Cheryl then tells only to Albert her preferred drink size, and tells only to Bernard her preferred drink temperature. (And Albert and Bernard are aware that she did so.) Everybody knows that Albert, Bernard and Cheryl don't make any reasoning mistakes and never lie. 
+
+Albert and Bernard now have the following conversation:; 
+
+How does Cheryl like to have her coffee?
