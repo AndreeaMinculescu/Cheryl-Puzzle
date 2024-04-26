@@ -200,7 +200,6 @@ def plot_distrib_answers():
     For each of the four original birthday puzzles, plot the frequency of all answers in a bar plot
     """
     df = pd.read_csv("All answers_all.csv")
-    df["Translated answer"] = None
     question_bank = pd.read_csv("../interface/question_bank.csv")
     dict_tom = {"I don't know": {'May, 15': 0, 'September, 14': 0, 'September, 15': 0, 'May, 18': 0},
                 "No solution": {'May, 15': 0, 'September, 14': 0, 'September, 15': 0, 'May, 18': 0},
@@ -228,6 +227,7 @@ def plot_distrib_answers():
     sorted_dict_tom.update(dict(list(dict_tom.items())[:3]))
     plot_multiple_bars_per_level(sorted_dict_tom, "Option chosen", "Distribution of answers per puzzle type",
                                  "plots/distrib_answers_puzzle")
+
 
 
 if __name__ == '__main__':

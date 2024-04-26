@@ -4,6 +4,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt  # Drawing graphs
 import networkx as nx
+from collections import Counter
 
 
 class Month(Enum):
@@ -21,6 +22,26 @@ def format_text_states(state):
     :return: the formatted description
     """
     return f'{state[0].name}, {str(state[1])}'
+
+
+def get_common_ratio(model_answers, subj_answers):
+    """
+    Computes the percentage of participant data explained by the model as:
+        the number of common answers / total number of answers
+
+    :param model_answers: list of answers given by the model
+    :param subj_answers: list of answers given by the participants
+    :return: percentage of explained data
+    """
+    # for consistency across answers, replace all occurrences of "Sept" with "September"
+    model_answers = [date.replace("Sept", "September") for date in model_answers]
+    model_dict = dict(Counter(model_answers))
+    subj_dict = dict(Counter(subj_answers))
+    # keep track of the common answers
+    common_keys = list(set(model_dict.keys()).intersection(subj_dict.keys()))
+    # count how many occurrences of the common answers exist
+    common_values = sum([min(model_dict[key], subj_dict[key]) for key in common_keys])
+    return common_values * 100 / len(subj_answers)
 
 
 def draw_model(graph, save_file=None):

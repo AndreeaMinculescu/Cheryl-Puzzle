@@ -1,20 +1,20 @@
+import random
+
 from utilities import format_text_states, draw_model
-from formula import NOT, KNOW, PropositionalAtom, Operator
+from formula import NOT, KNOW, PropositionalAtom, Operator, PublicAnnouncement
+from solver import Solver
 
 UPDATE_COUNT = 0
 
 
-class EpistemicModel:
-    def __init__(self, puzzle):
+class EpistemicModel(Solver):
+    def __init__(self, max_iter, max_tom_level, curr_tom_level, puzzle):
         """
-        Class that generates the Kripke model associated with a puzzle and processes public announcements
+        Solver that generates the Kripke model associated with a puzzle and processes public announcements
         """
-        # the puzzle specifications
-        self.puzzle = puzzle
-        # the current Kripke model graph
-        self.curr_graph = self.puzzle.generate_full_model()
+        super().__init__(max_iter, max_tom_level, curr_tom_level, puzzle)
         # dictionary that keeps track of whether each state should be removed from the Kripke model
-        self.curr_states = {node: False for node in list(self.curr_graph)}
+        self.curr_states = None
 
     def process_announcement(self, formula: Operator | PropositionalAtom, curr_worlds, flag_negate=False):
         """
@@ -49,7 +49,7 @@ class EpistemicModel:
             for world in curr_worlds.keys():
                 # ... identify the agent and its Kripke relations,...
                 agent_idx = list(self.puzzle.players.values()).index(formula.agent)
-                uncertainty_player = self.puzzle.all_uncertainty[self.puzzle.curr_level][agent_idx]
+                uncertainty_player = self.all_uncertainty[self.curr_level][agent_idx]
 
                 # ... identify the accessible worlds...
                 curr_accessible_worlds = self.get_accessible_worlds(uncertainty_player, world)
@@ -93,45 +93,115 @@ class EpistemicModel:
             return True
         return False
 
-    def update_model(self):
+    def update_model(self, graph):
         """
         Removes all states that should be removed and updates the uncertainty of the players
         """
         # remove nodes where the public announcement formula does not hold
-        self.curr_graph.remove_nodes_from([node for node in self.curr_states.keys() if self.curr_states[node]])
+        graph.remove_nodes_from([node for node in self.curr_states.keys() if self.curr_states[node]])
         # update the list of current states
-        self.curr_states = {node: None for node in list(self.curr_graph)}
+        self.curr_states = {node: None for node in list(graph)}
         # update the uncertainty of all players: relations associated with removed worlds are also removed
         for idx_player in range(len(self.puzzle.players)):
-            self.puzzle.update_uncertainty(idx_player, self.curr_states.keys())
+            self.update_uncertainty(idx_player, self.curr_states.keys())
+        return graph
 
-    def run_model_once(self):
+    def cut_operators(self, formula, wanted_level):
+        """
+        Main logic for the cut operator model: recursively remove one random knowledge operator from a formula until
+        the formula has (at most) the desired ToM level
+
+        :param formula: the formula to be adjusted
+        :param wanted_level: the expected ToM level
+        :return: the formula with the expected ToM level
+        """
+        # if the formula has the expected ToM level, then return it as a public announcement
+        if formula.tom_level <= wanted_level:
+            return PublicAnnouncement(formula)
+
+        # otherwise, randomly choose a depth and remove the knowledge operator (and associated NOT operator
+        # if applicable) at that depth
+        new_formula = self.remove_operator_at_depth(formula, random.randint(0, formula.tom_level-1))
+        return self.cut_operators(new_formula, wanted_level)
+
+    def remove_operator_at_depth(self, formula, curr_depth):
+        """
+        Recursively removes a knowledge operator at a specified depth
+
+        :param formula: the original formula
+        :param curr_depth: the depth of interest
+        :return: the formula with the removed knowledge operator
+        """
+        # if the formula at the top-most depth is of type KNOW...
+        if isinstance(formula, KNOW):
+            # if the knowledge operator is at the desired depth, then remove it and return the remainder
+            if curr_depth == 0:
+                return formula.formula
+
+            # otherwise, reduce the depth by 1
+            # NOTE: for NOT to be removed alongside the knowledge operator, counter must always reach 0 right after
+            # the last knowledge operator to be ignored
+            curr_depth -= 1
+            # keep the knowledge operator and process the next depth
+            return KNOW(self.remove_operator_at_depth(formula.formula, curr_depth), formula.agent)
+
+        # if the formula at the top-most depth is of type NOT...
+        elif isinstance(formula, NOT):
+            # if the NOT operator is at the desired depth and is followed by a knowledge operator, then remove the NOT
+            # operator alongside the knowledge operator
+            # NOTE: if the note operator should stay, then simply remove everything except the statement under else
+            if curr_depth == 0 and isinstance(formula.formula, KNOW):
+                return self.remove_operator_at_depth(formula.formula, curr_depth)
+            # otherwise, keep the NOT operator and process the next depth
+            else:
+                return NOT(self.remove_operator_at_depth(formula.formula, curr_depth))
+
+        # if the formula at the top-most depth not of type KNOW or NOT, then make sure to implement the logic!!
+        else:
+            raise NotImplementedError("Operator logic in remove_operator_at_death not implemented")
+
+
+    def run_model_once(self, init_graph, model_level=None, draw=False, save_file_name=None):
         """
         Processes all public announcement and updates the Kripke model
 
         :return: the left-over state(s) after all public announcement have been applied
         """
-        # iterate through all public announcements associated with the current level...
-        for idx, ann in enumerate(self.puzzle.all_announcements[self.puzzle.curr_level]):
-            # ... update model based on announcement...
-            self.process_announcement(ann, self.curr_states)
-            # ... and update the Kripke graph
-            self.update_model()
+        assert len(self.puzzle.all_announcements[self.curr_level]), \
+            "Please specify at least one public announcement!"
 
-        return self.get_answer()
+        self.curr_states = {node: False for node in list(init_graph)}
 
-    def get_answer(self):
+        # iterate through all public announcements associated with the current level
+        for idx, ann in enumerate(self.puzzle.all_announcements[self.curr_level]):
+            # check that announcement is of the correct type
+            if not isinstance(ann, PublicAnnouncement):
+                raise TypeError("Public announcement must be of type PublicAnnouncement!")
+            # potentially cut off operators
+            if model_level:
+                ann = self.cut_operators(ann.formula, model_level)
+            # update model based on announcement
+            self.process_announcement(ann.formula, self.curr_states)
+            # update the Kripke graph
+            updated_graph = self.update_model(init_graph)
+            # potentially visualize the updated graph
+            if draw:
+                draw_model(updated_graph, f"{save_file_name}_{UPDATE_COUNT}")
+
+        return self.get_answer(updated_graph)
+
+    def get_answer(self, graph):
         """
         Retrieve the states of the graph and format to puzzle answer
 
         :return: the state label, "No solution" or "Multiple solutions"
         """
-        answer_list = list(self.curr_graph)
+        answer_list = list(graph)
 
         if len(answer_list) == 0:
             return "No solution"
         elif len(answer_list) == 1:
-            return format_text_states(self.puzzle.all_states[self.puzzle.curr_level][answer_list[0]])
+            return format_text_states(self.puzzle.all_states[self.curr_level][answer_list[0]])
         else:
             return "Multiple solutions"
 

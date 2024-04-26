@@ -1,5 +1,6 @@
 # Credits: https://github.com/sileod/llm-theory-of-mind/
 
+
 class PropositionalAtom:
     def __init__(self, formula: str):
         """
@@ -57,6 +58,40 @@ class NOT(UnaryOperator):
         super().__init__("not", formula)
 
 
+class KNOW(UnaryOperator):
+    def __init__(self, formula: PropositionalAtom | Operator, agent: str):
+        """
+        Encodes a knowledge operator of the type "X knows that Y".
+
+        :param agent: the agent that knows some information or X
+        :param formula: the formula that the agent knows or Y (must be of type operator or propositional atom)
+        """
+        # raises exception if the formula is not of the appropriate type
+        if not isinstance(formula, PropositionalAtom) and not isinstance(formula, Operator):
+            raise TypeError("'what' formula must be of type PropositionalAtom or Operator")
+
+        super().__init__("know", formula)
+        self.formula = formula
+        self.agent = agent
+        self.tom_level = self._compute_tom_level()
+
+    def _compute_tom_level(self):
+        """
+        Given a knowledge formula, computes the ToM level by recursively counting the number of consecutive knowledge
+        formulas with different agents
+
+        :return: the ToM level of the formula
+        """
+        if isinstance(self.formula, KNOW):
+            # if the previous agent is the same as the current, then don't increase the ToM level
+            if self.formula.agent == self.agent:
+                return self.formula.tom_level
+        return self.formula.tom_level + 1
+
+    def __str__(self):
+        return f"{self.agent} knows that {self.formula}"
+
+
 class BinaryOperator(Operator):
     def __init__(self, symbol: str, left_formula: PropositionalAtom | Operator,
                  right_formula: PropositionalAtom | Operator):
@@ -84,41 +119,22 @@ class BinaryOperator(Operator):
         return f"({self.left_formula} {self.symbol} {self.right_formula})"
 
 
-class KNOW(Operator):
-    def __init__(self, who: str, what: PropositionalAtom | Operator):
+class PublicAnnouncement:
+    def __init__(self, formula: Operator | PropositionalAtom):
         """
-        Encodes a knowledge operator of the type "X knows that Y".
+        Encodes a public announcement
 
-        :param who: the agent that knows some information or X
-        :param what: the formula that the egent knows or Y (must be of type operator or propositional atom)
+        :param formula: formula associated with a public announcement
         """
-        # raises exception if the formula is not of the appropriate type
-        if not isinstance(what, PropositionalAtom) and not isinstance(what, Operator):
-            raise TypeError("'what' formula must be of type PropositionalAtom or Operator")
-
-        super().__init__("know")
-        self.formula = what
-        self.agent = who
-        self.tom_level = self.compute_tom_level()
-
-    def compute_tom_level(self):
-        """
-        Given a knowledge formula, computes the ToM level by recursively counting the number of consecutive knowledge
-        formulas with different agents
-
-        :return: the ToM level of the formula
-        """
-        if isinstance(self.formula, KNOW):
-            # if the previous agent is the same as the current, then don't increase the ToM level
-            if self.formula.agent == self.agent:
-                return self.formula.tom_level
-        return self.formula.tom_level + 1
+        self.formula = formula
 
     def __str__(self):
-        return f"{self.agent} knows that {self.formula}"
+        return f"Public announcement: {self.formula}"
 
 
 if __name__ == "__main__":
-    k = KNOW("a", KNOW("a", PropositionalAtom("c")))
+    k = KNOW(KNOW(PropositionalAtom("c"), "a"), "a")
     print(k)
     print(k.tom_level)
+    pa = PublicAnnouncement(k)
+    print(pa)
