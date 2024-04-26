@@ -149,7 +149,7 @@ class EpistemicModel(Solver):
         elif isinstance(formula, NOT):
             # if the NOT operator is at the desired depth and is followed by a knowledge operator, then remove the NOT
             # operator alongside the knowledge operator
-            # NOTE: if the note operator should stay, then simply remove everything except the statement under else
+            # NOTE: if the NOT operator should stay, then simply remove everything except the statement under else
             if curr_depth == 0 and isinstance(formula.formula, KNOW):
                 return self.remove_operator_at_depth(formula.formula, curr_depth)
             # otherwise, keep the NOT operator and process the next depth
