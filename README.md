@@ -64,13 +64,15 @@ who finished all eight trials within the specified amount of time(see ``analysis
 │   │       └── Puzzle Answers_*.csv
 │   │
 │   ├── plots\
+│   │   ├── acc_per_level.png
+│   │   ├── acc_per_scen.png
 │   │   ├── distrib_acc_participants.png
 │   │   ├── distrib_answers_puzzle.png
 │   │   ├── form_data.txt
 │   │   ├── p-beauty_distrib.png
-│   │   ├── scenario_level_log_time_distrib.png
-│   │   ├── scenario_log_time_distrib.png
-│   │   └── tom_log_time_distrib.png
+│   │   ├── scenario_level_time_distrib.png
+│   │   ├── scenario_time_distrib.png
+│   │   └── tom_time_distrib.png
 │   │
 │   ├── All answers_all.csv
 │   ├── All answers_puzzles.csv

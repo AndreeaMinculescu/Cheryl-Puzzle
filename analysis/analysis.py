@@ -70,7 +70,7 @@ def get_form_data():
     f.close()
 
 
-def get_accuracy_per_level_and_scenario():
+def plot_accuracy_per_level_and_scenario():
     """
     For each ToM level and scenario, compute the mean accuracy as
                 # of correct answers/ # of answers
@@ -88,6 +88,11 @@ def get_accuracy_per_level_and_scenario():
     print(compute_mean_dict(dict_tom))
     print(dict_scenario)
     print(compute_mean_dict(dict_scenario))
+
+    plot_bar(compute_mean_dict(dict_tom), "Accuracy per ToM level", "ToM level", "Accuracy (%) over the 8 puzzles",
+             "plots/acc_per_level", rotation_x=0)
+    plot_bar(compute_mean_dict(dict_scenario), "Accuracy per scenario", "Scenario", "Accuracy (%) over the 8 puzzles",
+             "plots/acc_per_scen", rotation_x=0)
 
 
 def plot_accuracy_per_participant():
@@ -121,7 +126,7 @@ def count_no_entries_per_participant():
     print(Counter(all_count))
 
 
-def plot_time_distribution():
+def plot_time_distribution(log_bool=False):
     """
     Plot the log-time distribution of solving a puzzle for:
         1) each ToM level
@@ -136,14 +141,15 @@ def plot_time_distribution():
 
     # for each ToM level, scenario and combination, store the log-transformed times
     for (idx, row) in df.iterrows():
-        dict_tom[row["Level"]].append(row["logTime"])
+        time = row["logTime"] if log_bool else row["Time"]
+        dict_tom[row["Level"]].append(time)
         # for scenarios, only consider the second block
         if row["Block"] == 2:
-            dict_scenario[row["Scenario"]].append(row["logTime"])
+            dict_scenario[row["Scenario"]].append(time)
             try:
-                dict_interaction[f"{row['Scenario']}-{row['Level']}"].append(row['logTime'])
+                dict_interaction[f"{row['Scenario']}-{row['Level']}"].append(time)
             except KeyError:
-                dict_interaction[f"{row['Scenario']}-{row['Level']}"] = [row['logTime']]
+                dict_interaction[f"{row['Scenario']}-{row['Level']}"] = [time]
 
     print(dict_tom)
     print(compute_mean_dict(dict_tom))
@@ -152,14 +158,14 @@ def plot_time_distribution():
     print(dict_interaction)
     print(compute_mean_dict(dict_interaction))
 
-    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM",
-                "Distribution of log-transformed time over ToM levels", "plots/tom_log_time_distrib")
-    plot_violin(list(dict_scenario.values()), list(dict_scenario.keys()), "Scenario",
-                "Distribution of log-transformed time over scenarios", "plots/scenario_log_time_distrib",
-                rotation_x=90)
-    plot_violin(list(dict_interaction.values()), list(dict_interaction.keys()), "Scenario-ToM level",
-                "Distribution of log-transformed time over scenarios and ToM levels",
-                "plots/scenario_level_log_time_distrib", rotation_x=90)
+    y_axis_label = "Time (log-transformed)" if log_bool else "Time (in seconds)"
+    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM", y_axis_label,
+                "Distribution of time over ToM levels", "plots/tom_time_distrib")
+    plot_violin(list(dict_scenario.values()), list(dict_scenario.keys()), "Scenario", y_axis_label,
+                "Distribution of time over scenarios", "plots/scenario_time_distrib")
+    plot_violin(list(dict_interaction.values()), list(dict_interaction.keys()), "Scenario-ToM level", y_axis_label,
+                "Distribution of time over scenarios and ToM levels",
+                "plots/scenario_level_time_distrib", rotation_x=90)
 
 
 def plot_p_beauty(bin_size=20):
@@ -232,7 +238,7 @@ def plot_distrib_answers():
 
 if __name__ == '__main__':
     get_form_data()
-    get_accuracy_per_level_and_scenario()
+    plot_accuracy_per_level_and_scenario()
     plot_accuracy_per_participant()
     count_no_entries_per_participant()
     plot_time_distribution()

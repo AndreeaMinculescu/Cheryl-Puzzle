@@ -12,7 +12,7 @@ def compute_mean_dict(d):
     """
     mean_d = {}
     for key in d.keys():
-        mean_d[key] = np.nanmean(d[key])
+        mean_d[key] = int(np.nanmean(d[key]) * 100)
     return mean_d
 
 
@@ -110,13 +110,18 @@ def plot_bar(data, title_plot, x_label, y_label, title_save_file, rotation_x=90)
     :param rotation_x: degree of rotation of the labels on the x axis
     """
     plt.cla()
-    plt.bar([str(key) for key in data.keys()], list(data.values()), edgecolor='black')
-    plt.xlabel(x_label)
-    plt.xticks([str(key) for key in data.keys()], rotation=rotation_x, fontsize=8)
-    plt.ylabel(y_label)
-    plt.yticks(list(data.values()))
-    plt.title(title_plot)
-    plt.savefig(f"{title_save_file}.png", bbox_inches='tight')
+    figure, ax = plt.subplots(nrows=1,
+                              ncols=1,
+                              figsize=(5, 7))
+    ax.bar([str(key) for key in data.keys()], list(data.values()), edgecolor='black')
+    ax.set_xlabel(x_label)
+    ax.tick_params(axis='x', rotation=rotation_x)
+    ax.set_xticks([str(key) for key in data.keys()])
+    ax.set_ylabel(y_label)
+    ax.set_yticks(list(data.values()))
+    ax.set_title(title_plot)
+    figure.tight_layout()
+    figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 
 def plot_multiple_bars_per_level(data_dict, x_label, title_plot, title_save_file):
@@ -148,7 +153,7 @@ def plot_multiple_bars_per_level(data_dict, x_label, title_plot, title_save_file
     plt.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 
-def plot_violin(list_data, x_axis_levels, x_label, title_plot, title_save_file, rotation_x=0):
+def plot_violin(list_data, x_axis_levels, x_label, y_label, title_plot, title_save_file, rotation_x=0):
     """
     Generate violin plot
     :param list_data: data in list format
@@ -169,7 +174,7 @@ def plot_violin(list_data, x_axis_levels, x_label, title_plot, title_save_file, 
     ax.set_xticklabels(x_axis_levels)
     ax.set_title(title_plot)
     ax.set_xlabel(x_label)
-    ax.set_ylabel("Time (log-transformed)")
+    ax.set_ylabel(y_label)
     figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 
