@@ -99,7 +99,7 @@ def get_level_and_scen():
 
 #########################PLOTTING HELP FUNCTIONS#################################################
 
-def plot_bar(data, title_plot, x_label, y_label, title_save_file, rotation_x=90):
+def plot_bar(data, title_plot, x_label, y_label, y_range, title_save_file, rotation_x=90):
     """
     Generate simple bar plot
     :param data: data in dictionary format
@@ -119,6 +119,7 @@ def plot_bar(data, title_plot, x_label, y_label, title_save_file, rotation_x=90)
     ax.set_xticks([str(key) for key in data.keys()])
     ax.set_ylabel(y_label)
     ax.set_yticks(list(data.values()))
+    ax.set_ylim([y_range[0], y_range[1]])
     ax.set_title(title_plot)
     figure.tight_layout()
     figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
@@ -153,7 +154,7 @@ def plot_multiple_bars_per_level(data_dict, x_label, title_plot, title_save_file
     plt.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 
-def plot_violin(list_data, x_axis_levels, x_label, y_label, title_plot, title_save_file, rotation_x=0):
+def plot_violin(list_data, x_axis_levels, x_label, y_label, y_range, title_plot, title_save_file, rotation_x=0):
     """
     Generate violin plot
     :param list_data: data in list format
@@ -175,6 +176,7 @@ def plot_violin(list_data, x_axis_levels, x_label, y_label, title_plot, title_sa
     ax.set_title(title_plot)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
+    ax.set_ylim([y_range[0], y_range[1]])
     figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 

@@ -84,15 +84,19 @@ def plot_accuracy_per_level_and_scenario():
         dict_tom[row["Level"]].append(row["Is.correct"])
         dict_scenario[row["Scenario"]].append(row["Is.correct"])
 
-    print(dict_tom)
-    print(compute_mean_dict(dict_tom))
-    print(dict_scenario)
-    print(compute_mean_dict(dict_scenario))
+    dict_tom_means = compute_mean_dict(dict_tom)
+    # for readability, sort scenario dict by value
+    dict_scenario_means = dict(sorted(compute_mean_dict(dict_scenario).items(), key=lambda item: item[1], reverse=True))
 
-    plot_bar(compute_mean_dict(dict_tom), "Accuracy per ToM level", "ToM level", "Accuracy (%) over the 8 puzzles",
-             "plots/acc_per_level", rotation_x=0)
-    plot_bar(compute_mean_dict(dict_scenario), "Accuracy per scenario", "Scenario", "Accuracy (%) over the 8 puzzles",
-             "plots/acc_per_scen", rotation_x=0)
+    print(dict_tom)
+    print(dict_tom_means)
+    print(dict_scenario)
+    print(dict_scenario_means)
+
+    plot_bar(dict_tom_means, "Accuracy per ToM level", "ToM level", "Accuracy (%) over the 8 puzzles", (0, 100),
+             title_save_file="plots/acc_per_level", rotation_x=0)
+    plot_bar(dict_scenario_means, "Accuracy per scenario", "Scenario", "Accuracy (%) over the 8 puzzles", (0, 100),
+             title_save_file="plots/acc_per_scen", rotation_x=0)
 
 
 def plot_accuracy_per_participant():
@@ -108,8 +112,9 @@ def plot_accuracy_per_participant():
         no_correct_answers = len(df_temp[df_temp['Is.correct'] == 1])
         all_accuracies.append(no_correct_answers / len(df_temp) * 100)
 
-    plot_bar(dict(sorted(dict(Counter(all_accuracies)).items())), "Distribution of accuracy over participants",
-             "Accuracy (%) over the 8 puzzles", "Number of participants", "plots/distrib_acc_participants",
+    all_accuracies_sorted = dict(sorted(dict(Counter(all_accuracies)).items()))
+    plot_bar(all_accuracies_sorted, "Distribution of accuracy over participants", "Accuracy (%) over the 8 puzzles",
+             "Number of participants", (0, max(all_accuracies_sorted.values())), "plots/distrib_acc_participants",
              rotation_x=0)
 
 
@@ -151,21 +156,21 @@ def plot_time_distribution(log_bool=False):
             except KeyError:
                 dict_interaction[f"{row['Scenario']}-{row['Level']}"] = [time]
 
+    # for readability, sort by mean of values
+    dict_scenario_sorted = dict(sorted(dict_scenario.items(), key=lambda item: mean(item[1])))
+
     print(dict_tom)
-    print(compute_mean_dict(dict_tom))
-    print(dict_scenario)
-    print(compute_mean_dict(dict_scenario))
+    print(dict_scenario_sorted)
     print(dict_interaction)
-    print(compute_mean_dict(dict_interaction))
 
     y_axis_label = "Time (log-transformed)" if log_bool else "Time (in seconds)"
-    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM", y_axis_label,
+    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM", y_axis_label, (0, 800),
                 "Distribution of time over ToM levels", "plots/tom_time_distrib")
-    plot_violin(list(dict_scenario.values()), list(dict_scenario.keys()), "Scenario", y_axis_label,
-                "Distribution of time over scenarios", "plots/scenario_time_distrib")
+    plot_violin(list(dict_scenario_sorted.values()), list(dict_scenario_sorted.keys()), "Scenario", y_axis_label,
+                (0, 800), "Distribution of time over scenarios", "plots/scenario_time_distrib")
     plot_violin(list(dict_interaction.values()), list(dict_interaction.keys()), "Scenario-ToM level", y_axis_label,
-                "Distribution of time over scenarios and ToM levels",
-                "plots/scenario_level_time_distrib", rotation_x=90)
+                (0, 800), "Distribution of time over scenarios and ToM levels", "plots/scenario_level_time_distrib",
+                rotation_x=90)
 
 
 def plot_p_beauty(bin_size=20):
@@ -198,7 +203,7 @@ def plot_p_beauty(bin_size=20):
                 break
 
     plot_bar(dict_binned_answers, "P-beauty distribution", "Value interval", "Number of participants",
-             "plots/p-beauty_distrib")
+             (0, max(dict_binned_answers.values())), "plots/p-beauty_distrib")
 
 
 def plot_distrib_answers():
