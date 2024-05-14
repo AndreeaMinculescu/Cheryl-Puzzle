@@ -112,11 +112,11 @@ shapiro.test(x = aov.residuals.level )
 
 ```{r}
 # alternative for ANOVA when assumptions not met
-# results: still significant; levels 3-4 become significantly different
-res.kruskal.level <- kruskal.test(logTime ~ Level, data = dat_ans_eight_trials)
+# results: still significant; levels 3-4 not significant
+res.kruskal.level <- kruskal.test(Time ~ Level, data = dat_ans_eight_trials)
 res.kruskal.level
 
-dunnTest(logTime ~ Level, data=dat_ans_eight_trials)
+dunnTest(Time ~ Level, data=dat_ans_eight_trials)
 ```
 
 
@@ -147,13 +147,15 @@ qqline(aov.residuals.scen)
 # Run Shapiro-Wilk test
 shapiro.test(x = aov.residuals.scen )
 ```
+
+
 ```{r}
 # alternative for ANOVA when assumptions not met
 # results: still not significant
-res.kruskal.scen <- kruskal.test(logTime ~ Scenario, data = dat_ans_blocktwo)
+res.kruskal.scen <- kruskal.test(Time ~ Scenario, data = dat_ans_blocktwo)
 res.kruskal.scen
 
-dunnTest(logTime ~ Scenario, data=dat_ans_blocktwo)
+dunnTest(Time ~ Scenario, data=dat_ans_blocktwo)
 ```
 
 

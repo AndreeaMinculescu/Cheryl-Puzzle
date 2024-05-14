@@ -11,7 +11,7 @@
 
 <meta name="author" content="Andreea Minculescu" />
 
-<meta name="date" content="2024-04-22" />
+<meta name="date" content="2024-05-12" />
 
 <title>MSc Thesis Analysis</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">MSc Thesis Analysis</h1>
 <h4 class="author">Andreea Minculescu</h4>
-<h4 class="date">2024-04-22</h4>
+<h4 class="date">2024-05-12</h4>
 
 </div>
 
@@ -453,15 +453,15 @@ shapiro.test(x = aov.residuals.level )</code></pre>
 ## data:  aov.residuals.level
 ## W = 0.94863, p-value = 1.995e-09</code></pre>
 <pre class="r"><code># alternative for ANOVA when assumptions not met
-# results: still significant; levels 3-4 become significantly different
-res.kruskal.level &lt;- kruskal.test(logTime ~ Level, data = dat_ans_eight_trials)
+# results: still significant; levels 3-4 not significant
+res.kruskal.level &lt;- kruskal.test(Time ~ Level, data = dat_ans_eight_trials)
 res.kruskal.level</code></pre>
 <pre><code>## 
 ##  Kruskal-Wallis rank sum test
 ## 
-## data:  logTime by Level
+## data:  Time by Level
 ## Kruskal-Wallis chi-squared = 57.29, df = 3, p-value = 2.228e-12</code></pre>
-<pre class="r"><code>dunnTest(logTime ~ Level, data=dat_ans_eight_trials)</code></pre>
+<pre class="r"><code>dunnTest(Time ~ Level, data=dat_ans_eight_trials)</code></pre>
 <pre><code>## Dunn (1964) Kruskal-Wallis multiple comparison</code></pre>
 <pre><code>##   p-values adjusted with the Holm method.</code></pre>
 <pre><code>##   Comparison          Z      P.unadj        P.adj
@@ -528,14 +528,14 @@ shapiro.test(x = aov.residuals.scen )</code></pre>
 ## W = 0.9402, p-value = 1.69e-06</code></pre>
 <pre class="r"><code># alternative for ANOVA when assumptions not met
 # results: still not significant
-res.kruskal.scen &lt;- kruskal.test(logTime ~ Scenario, data = dat_ans_blocktwo)
+res.kruskal.scen &lt;- kruskal.test(Time ~ Scenario, data = dat_ans_blocktwo)
 res.kruskal.scen</code></pre>
 <pre><code>## 
 ##  Kruskal-Wallis rank sum test
 ## 
-## data:  logTime by Scenario
+## data:  Time by Scenario
 ## Kruskal-Wallis chi-squared = 7.3801, df = 3, p-value = 0.06072</code></pre>
-<pre class="r"><code>dunnTest(logTime ~ Scenario, data=dat_ans_blocktwo)</code></pre>
+<pre class="r"><code>dunnTest(Time ~ Scenario, data=dat_ans_blocktwo)</code></pre>
 <pre><code>## Warning: Scenario was coerced to a factor.</code></pre>
 <pre><code>## Dunn (1964) Kruskal-Wallis multiple comparison</code></pre>
 <pre><code>##   p-values adjusted with the Holm method.</code></pre>

@@ -93,9 +93,9 @@ def plot_accuracy_per_level_and_scenario():
     print(dict_scenario)
     print(dict_scenario_means)
 
-    plot_bar(dict_tom_means, "Accuracy per ToM level", "ToM level", "Accuracy (%) over the 8 puzzles", (0, 100),
+    plot_bar(dict_tom_means, "Accuracy per ToM Level", "ToM level", "Accuracy (%) over the 8 puzzles", (0, 100),
              title_save_file="plots/acc_per_level", rotation_x=0)
-    plot_bar(dict_scenario_means, "Accuracy per scenario", "Scenario", "Accuracy (%) over the 8 puzzles", (0, 100),
+    plot_bar(dict_scenario_means, "Accuracy per Scenario", "Scenario", "Accuracy (%) over the 8 puzzles", (0, 100),
              title_save_file="plots/acc_per_scen", rotation_x=0)
 
 
@@ -165,11 +165,11 @@ def plot_time_distribution(log_bool=False):
 
     y_axis_label = "Time (log-transformed)" if log_bool else "Time (in seconds)"
     plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM", y_axis_label, (0, 800),
-                "Distribution of time over ToM levels", "plots/tom_time_distrib")
+                "Distribution of Time over ToM Levels", "plots/tom_time_distrib")
     plot_violin(list(dict_scenario_sorted.values()), list(dict_scenario_sorted.keys()), "Scenario", y_axis_label,
-                (0, 800), "Distribution of time over scenarios", "plots/scenario_time_distrib")
+                (0, 800), "Distribution of Time over Scenarios", "plots/scenario_time_distrib")
     plot_violin(list(dict_interaction.values()), list(dict_interaction.keys()), "Scenario-ToM level", y_axis_label,
-                (0, 800), "Distribution of time over scenarios and ToM levels", "plots/scenario_level_time_distrib",
+                (0, 800), "Distribution of Time over Scenarios and ToM Levels", "plots/scenario_level_time_distrib",
                 rotation_x=90)
 
 

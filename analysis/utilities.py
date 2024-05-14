@@ -2,6 +2,8 @@ import pandas as pd
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rc('font', size=12)
 
 
 def compute_mean_dict(d):
