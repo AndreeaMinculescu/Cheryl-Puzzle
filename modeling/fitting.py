@@ -126,8 +126,11 @@ def compute_likelihood(correct, incorrect, penalty=0.5):
     """
     # epsilon, error rate - incoherent answers divided by n
     e = incorrect / (correct + incorrect)
-    # l = n(1-e)*ln(1-e) + ne*ln(pe)
-    likelihood = correct * math.log(1 - e) + incorrect * math.log(e * penalty)
+    likelihood = 0
+    if correct > 0:
+        likelihood += correct * math.log(1 - e)  # n(1-e)*ln(1-e)
+    if incorrect > 0:
+        likelihood += incorrect * math.log(e * penalty)  # ne*ln(pe)
     return likelihood
 
 
