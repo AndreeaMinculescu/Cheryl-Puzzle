@@ -53,12 +53,16 @@ def generate_all_predictions(max_pa_tom_level=3):
         # in statements with higher ToM level than model_level, until the statement reaches model_level ToM
         # note: model_level = 0 means that cutting is disabled
         for model_level in range(max_pa_tom_level):
-            # get the answer predicted by the model
-            model_answer = get_prediction_one_model(temp_solver, {"model_level": model_level})
-            # store the prediction
-            model_predictions.append(model_answer)
-            # determine whether the predicted answer is the correct answer
-            model_is_correct.append(bool(model_answer == correct_answer))
+            for model_cutting_dir in ["lr", "rl"]:
+                if model_level == 0 and model_cutting_dir == "rl":
+                    continue
+                # get the answer predicted by the model
+                model_answer = get_prediction_one_model(temp_solver, {"model_level": model_level,
+                                                                      "cutting_direction": model_cutting_dir})
+                # store the prediction
+                model_predictions.append(model_answer)
+                # determine whether the predicted answer is the correct answer
+                model_is_correct.append(bool(model_answer == correct_answer))
 
         predictions_df.loc[predictions_df.shape[0]] = [row["Subject.id"], row["Trial"], row["Level"], correct_answer,
                                                        row["Translated.answer"], bool(row["Is.correct"]),

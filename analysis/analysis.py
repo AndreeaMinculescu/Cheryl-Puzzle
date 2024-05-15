@@ -94,9 +94,11 @@ def plot_accuracy_per_level_and_scenario():
     print(dict_scenario_means)
 
     plot_bar(dict_tom_means, "Accuracy per ToM Level", "ToM level", "Accuracy (%) over the 8 puzzles", (0, 100),
-             title_save_file="plots/acc_per_level", rotation_x=0)
+             (1, len(dict_tom_means)), title_save_file="plots/acc_per_level", rotation_x=0, chance_y=1/13*100,
+             bar_width=0.5)
     plot_bar(dict_scenario_means, "Accuracy per Scenario", "Scenario", "Accuracy (%) over the 8 puzzles", (0, 100),
-             title_save_file="plots/acc_per_scen", rotation_x=0)
+             (0, len(dict_scenario_means)-1), title_save_file="plots/acc_per_scen", rotation_x=0, chance_y=1/13*100,
+             bar_width=0.5)
 
 
 def plot_accuracy_per_participant():
@@ -104,18 +106,18 @@ def plot_accuracy_per_participant():
     For each participant, compute the mean accuracy over all completed puzzles. Then, plot the frequency of the
     accuracy values in a bar plot.
     """
-    all_accuracies = []
+    all_accuracies = {x/8 * 100: 0 for x in range(9)}
     all_answers = pd.read_csv("All answers_puzzles all trials.csv")
     # compute and store all the mean accuracy over all completed puzzles for each participant
     for subject_id in set(all_answers["Subject.id"]):
         df_temp = all_answers.loc[all_answers["Subject.id"] == subject_id]
         no_correct_answers = len(df_temp[df_temp['Is.correct'] == 1])
-        all_accuracies.append(no_correct_answers / len(df_temp) * 100)
+        accuracy = no_correct_answers / len(df_temp) * 100
+        all_accuracies[accuracy] += 1
 
-    all_accuracies_sorted = dict(sorted(dict(Counter(all_accuracies)).items()))
-    plot_bar(all_accuracies_sorted, "Distribution of accuracy over participants", "Accuracy (%) over the 8 puzzles",
-             "Number of participants", (0, max(all_accuracies_sorted.values())), "plots/distrib_acc_participants",
-             rotation_x=0)
+    plot_bar(all_accuracies, "Distribution of accuracy over participants", "Accuracy (%) over the 8 puzzles",
+             "Number of participants", (0, max(all_accuracies.values())), (0, max(all_accuracies.keys())),
+             "plots/distrib_acc_participants", chance_x=1/13*100, rotation_x=0, bar_width=5)
 
 
 def count_no_entries_per_participant():
@@ -242,10 +244,10 @@ def plot_distrib_answers():
 
 
 if __name__ == '__main__':
-    get_form_data()
+    # get_form_data()
     plot_accuracy_per_level_and_scenario()
-    plot_accuracy_per_participant()
-    count_no_entries_per_participant()
-    plot_time_distribution()
-    plot_p_beauty()
-    plot_distrib_answers()
+    # plot_accuracy_per_participant()
+    # count_no_entries_per_participant()
+    # plot_time_distribution()
+    # plot_p_beauty()
+    # plot_distrib_answers()

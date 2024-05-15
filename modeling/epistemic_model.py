@@ -106,13 +106,16 @@ class EpistemicModel(Solver):
             self.update_uncertainty(idx_player, self.curr_states.keys())
         return graph
 
-    def cut_operators(self, formula, wanted_level):
+    def cut_operators(self, formula, wanted_level, cutting_direction):
         """
         Main logic for the cut operator model: recursively remove one random knowledge operator from a formula until
         the formula has (at most) the desired ToM level
 
         :param formula: the formula to be adjusted
         :param wanted_level: the expected ToM level
+        :param cutting_direction: the direction in which knowledge statements are removed by the cutting model until
+        the statement is of at most "wanted_level" ToM level; lr means that the left-most knowledge operator in the
+        formula is removed first; rl means that the right-most knowledge operator in the formula is removed first
         :return: the formula with the expected ToM level
         """
         # if the formula has the expected ToM level, then return it as a public announcement
@@ -121,8 +124,13 @@ class EpistemicModel(Solver):
 
         # otherwise, randomly choose a depth and remove the knowledge operator (and associated NOT operator
         # if applicable) at that depth
-        new_formula = self.remove_operator_at_depth(formula, random.randint(0, formula.tom_level-1))
-        return self.cut_operators(new_formula, wanted_level)
+        if cutting_direction == "lr":
+            new_formula = self.remove_operator_at_depth(formula, 0)
+        elif cutting_direction == "rl":
+            new_formula = self.remove_operator_at_depth(formula, formula.tom_level-1)
+        else:
+            raise NotImplementedError("Unknown cutting direction! Please first specify cutting behaviour!")
+        return self.cut_operators(new_formula, wanted_level, cutting_direction)
 
     def remove_operator_at_depth(self, formula, curr_depth):
         """
@@ -160,11 +168,18 @@ class EpistemicModel(Solver):
         else:
             raise NotImplementedError("Operator logic in remove_operator_at_death not implemented")
 
-
-    def run_model_once(self, init_graph, model_level=None, draw=False, save_file_name=None):
+    def run_model_once(self, init_graph, model_level=None, cutting_direction="lr", draw=False, save_file_name="temp"):
         """
         Processes all public announcement and updates the Kripke model
 
+        :param init_graph: the initial Kripke graph on which the public announcements are applied
+        :param model_level: the maximum ToM level that the model can process (if None, then the model can process
+        any ToM statement)
+        :param cutting_direction: the direction in which knowledge statements are removed by the cutting model until
+        the statement is of at most "model_level" ToM level
+        :param draw: if True then the intermediary Kripke models after each public announcement is drawn and saved to
+        a png
+        :param save_file_name: the path to save the pngs at (applicable if draw is set to True)
         :return: the left-over state(s) after all public announcement have been applied
         """
         assert len(self.puzzle.all_announcements[self.curr_level]), \
@@ -179,7 +194,7 @@ class EpistemicModel(Solver):
                 raise TypeError("Public announcement must be of type PublicAnnouncement!")
             # potentially cut off operators
             if model_level:
-                ann = self.cut_operators(ann.formula, model_level)
+                ann = self.cut_operators(ann.formula, model_level, cutting_direction)
             # update model based on announcement
             self.process_announcement(ann.formula, self.curr_states)
             # update the Kripke graph

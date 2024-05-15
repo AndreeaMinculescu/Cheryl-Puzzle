@@ -12,7 +12,7 @@ MAX_ITERATIONS = 84
 # the type of the model (can be either RandomModel or EpistemicModel)
 MODEL_TYPE = EpistemicModel
 # dictionary of keyword argument for the run_model_once function (NOTE: function must be implemented for all model)
-KWARGS = {EpistemicModel: {"model_level": 3, "draw":False, "save_file_name":"./tmp"},
+KWARGS = {EpistemicModel: {"model_level": 1, "cutting_direction": "lr", "draw":False, "save_file_name":"./tmp"},
           RandomModel: {}}
 # path to file to save results in
 FILE_PATH = "results.txt"
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     f.write(f"\nModel configuration: {str(MODEL_TYPE)} - {KWARGS[MODEL_TYPE]}\n\n")
 
     # iterate through all levels of ToM
-    for level in range(MAX_TOM_LEVEL):
+    for level in range(3,MAX_TOM_LEVEL):
         # initialize solver object
         solver = MODEL_TYPE(MAX_ITERATIONS, MAX_TOM_LEVEL, level, cb)
         # initialize list to save model answers in
