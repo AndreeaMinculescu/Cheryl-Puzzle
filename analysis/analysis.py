@@ -161,9 +161,9 @@ def plot_time_distribution(log_bool=False):
     # for readability, sort by mean of values
     dict_scenario_sorted = dict(sorted(dict_scenario.items(), key=lambda item: mean(item[1])))
 
-    print(dict_tom)
-    print(dict_scenario_sorted)
-    print(dict_interaction)
+    print(compute_mean_dict(dict_tom))
+    print(compute_mean_dict(dict_scenario_sorted))
+    print(compute_mean_dict(dict_interaction))
 
     y_axis_label = "Time (log-transformed)" if log_bool else "Time (in seconds)"
     plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM", y_axis_label, (0, 800),
@@ -242,12 +242,11 @@ def plot_distrib_answers():
                                  "plots/distrib_answers_puzzle")
 
 
-
 if __name__ == '__main__':
-    # get_form_data()
+    get_form_data()
     plot_accuracy_per_level_and_scenario()
-    # plot_accuracy_per_participant()
-    # count_no_entries_per_participant()
-    # plot_time_distribution()
-    # plot_p_beauty()
-    # plot_distrib_answers()
+    plot_accuracy_per_participant()
+    count_no_entries_per_participant()
+    plot_time_distribution()
+    plot_p_beauty()
+    plot_distrib_answers()

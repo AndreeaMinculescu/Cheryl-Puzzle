@@ -93,12 +93,13 @@ class EpistemicModel(Solver):
             return True
         return False
 
-    def update_model(self, graph):
+    def update_model(self, graph, flag_not_reverse):
         """
         Removes all states that should be removed and updates the uncertainty of the players
         """
         # remove nodes where the public announcement formula does not hold
-        graph.remove_nodes_from([node for node in self.curr_states.keys() if self.curr_states[node]])
+        graph.remove_nodes_from([node for node in self.curr_states.keys()
+                                 if self.curr_states[node] is flag_not_reverse])
         # update the list of current states
         self.curr_states = {node: None for node in list(graph)}
         # update the uncertainty of all players: relations associated with removed worlds are also removed
@@ -168,7 +169,8 @@ class EpistemicModel(Solver):
         else:
             raise NotImplementedError("Operator logic in remove_operator_at_death not implemented")
 
-    def run_model_once(self, init_graph, model_level=None, cutting_direction="lr", draw=False, save_file_name="temp"):
+    def run_model_once(self, init_graph, model_level=None, cutting_direction="lr", flag_not_reverse=True, draw=False,
+                       save_file_name="temp"):
         """
         Processes all public announcement and updates the Kripke model
 
@@ -198,7 +200,7 @@ class EpistemicModel(Solver):
             # update model based on announcement
             self.process_announcement(ann.formula, self.curr_states)
             # update the Kripke graph
-            updated_graph = self.update_model(init_graph)
+            updated_graph = self.update_model(init_graph, flag_not_reverse)
             # potentially visualize the updated graph
             if draw:
                 draw_model(updated_graph, f"{save_file_name}_{UPDATE_COUNT}")

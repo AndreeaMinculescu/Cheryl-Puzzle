@@ -14,7 +14,7 @@ def compute_mean_dict(d):
     """
     mean_d = {}
     for key in d.keys():
-        mean_d[key] = int(np.nanmean(d[key]) * 100)
+        mean_d[key] = [np.nanmean(d[key]), np.std(d[key])]
     return mean_d
 
 
