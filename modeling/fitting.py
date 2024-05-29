@@ -7,7 +7,13 @@ import os
 import math
 import scipy
 import itertools
+from utilities import plot_bar
+from collections import Counter
 
+CONFIG = "test"
+NAME_BAR_PLOT = f"plots/metadata/distribChosen_{CONFIG}"
+SUBJ_MODEL_FILE_PATH = f"plots/metadata/{CONFIG}"
+SAVE_BOOL = False
 ################## MODEL PREDICTIONS ##################
 
 
@@ -25,7 +31,7 @@ def get_prediction_one_model(solver, kwargs):
     return model_answer.replace("Sept", "September")
 
 
-def generate_all_predictions(name_predictions_file="preidictions_tom", max_pa_tom_level=3):
+def generate_all_predictions(name_predictions_file="predictions_tom", max_pa_tom_level=3):
     """
     Generates file with all ToM models' predictions for the answers of the human participants
 
@@ -33,6 +39,10 @@ def generate_all_predictions(name_predictions_file="preidictions_tom", max_pa_to
     """
     # read in subject data
     subj_df = pd.read_csv("../analysis/All answers_puzzles.csv")
+    # uncomment below to only process wrong answers; change to value 1 for only correct answers
+    # subj_df = subj_df.loc[(subj_df["Is.correct"] == 0)]
+    # uncomment and adjust below to only process certain levels of ToM
+    # subj_df = subj_df.loc[(subj_df["Level"] > 2)]
     # read in question bank
     questions_df = pd.read_csv("../interface/question_bank.csv")
     # initialize prediction dataframe
@@ -48,6 +58,7 @@ def generate_all_predictions(name_predictions_file="preidictions_tom", max_pa_to
 
         model_predictions = []
         model_is_correct = []
+        model_cutting_dirs_config = ["lr", "rl"]
 
         # initialize epistemic model
         temp_solver = EpistemicModel(1, max_pa_tom_level, row["Level"] - 1, cb)
@@ -55,13 +66,14 @@ def generate_all_predictions(name_predictions_file="preidictions_tom", max_pa_to
         # in statements with higher ToM level than model_level, until the statement reaches model_level ToM
         # note: model_level = 0 means that cutting is disabled
         for model_level in range(max_pa_tom_level):
-            for model_cutting_dir, model_reverse in itertools.product(["lr", "rl"], [True]):
-                if model_level == 0 and model_cutting_dir != "lr":
+            for model_cutting_dir in model_cutting_dirs_config:
+                # for epistemic model (model_level=0) compute answer only once (model_cutting_dir has no effect;
+                # for cut-2 model (model_level=2), only cut from left or from right (both give the same answer)
+                if model_level in [0, 2] and model_cutting_dir != model_cutting_dirs_config[0]:
                     continue
                 # get the answer predicted by the model
                 model_answer = get_prediction_one_model(temp_solver, {"model_level": model_level,
-                                                                      "cutting_direction": model_cutting_dir,
-                                                                      "flag_not_reverse": model_reverse})
+                                                                      "cutting_direction": model_cutting_dir})
                 # store the prediction
                 model_predictions.append(model_answer)
                 # determine whether the predicted answer is the correct answer
@@ -122,7 +134,7 @@ def count_subject_answers(answer_list):
 
 
 # function adapted from https://github.com/jdtoprug/EpistemicToMProject
-def compute_likelihood(correct, incorrect, penalty=1/13):
+def compute_likelihood(correct, incorrect, penalty=1/12):
     """
     Calculate log-likelihood
 
@@ -142,7 +154,7 @@ def compute_likelihood(correct, incorrect, penalty=1/13):
 
 
 # function adapted from https://github.com/jdtoprug/EpistemicToMProject
-def compute_error_likelihood_random(answer_dict):
+def compute_error_likelihood_random(subj_answer_dict, name_pred_file):
     """
     Calculates likelihood for random model, taking into account the participant's answer distribution
 
@@ -150,10 +162,34 @@ def compute_error_likelihood_random(answer_dict):
     occurrences
     :return: log-likelihood of random model corresponding to participant
     """
-    likelihood = 0  # To-be-outputted log-likelihood
-    n = sum(answer_dict.values())  # Calculate n, the total number of decision points
-    for count_ans in answer_dict.values():  # Loop over answers
-        likelihood += (count_ans * math.log(count_ans / n))  # Sum over answers of a*ln(a/n)
+    pred_df = pd.read_csv(f'{name_pred_file}.csv')
+    all_subj_answer_dict = {}
+    for ans in list(pred_df["Subject.answer"]):
+        try:
+            all_subj_answer_dict[ans] += 1
+        except KeyError:
+            all_subj_answer_dict[ans] = 1
+
+    likelihood = 0
+    for ans in subj_answer_dict.keys():
+        likelihood += subj_answer_dict[ans] * math.log(all_subj_answer_dict[ans]/sum(all_subj_answer_dict.values()))
+    return likelihood
+
+def compute_likelihood_random_2(subj_answers, penalty=1/12):
+    """
+    Calculate log-likelihood
+
+    :param correct: number of times model predictions corresponded to participant answers
+    :param incorrect: number of times model predictions deviated from participant answers
+    :param penalty: p in n(1-e)*ln(1-e) + ne*ln(pe)
+    :return: log-likelihood of participant using this model's strategy
+    """
+    epsilon = max(dict(Counter(subj_answers)).values())/len(subj_answers)
+    likelihood = 0
+    if 1 - epsilon > 0:
+        likelihood += len(subj_answers) * (1 - epsilon) * math.log(1 - epsilon)  # n(1-e)*ln(1-e)
+    if epsilon > 0:
+        likelihood += len(subj_answers) * epsilon * math.log(penalty * epsilon)  # ne*ln(pe)
     return likelihood
 
 
@@ -170,14 +206,14 @@ def compute_correct_rate_random(answer_dict):
     return rate
 
 
-def generate_log_likelihoods(name_likelihood_file="likelihoods", name_pred_file="predictions_tom"):
+def generate_log_likelihoods(name_likelihood_file="likelihoods", name_pred_file="predictions_tom", replace_all=False):
     """
     Computes evidence for each model and saves to file
 
     :param name_pred_file: file path where all model predictions for participants' answers have been saved
     """
     # if the predictions file does not exist, then first generate it
-    if not os.path.exists(f"{name_pred_file}.csv"):
+    if not os.path.exists(f"{name_pred_file}.csv") or replace_all:
         generate_all_predictions(name_predictions_file=name_pred_file)
     # load the prediction file
     prediction_model_df = pd.read_csv(f"{name_pred_file}.csv")
@@ -226,7 +262,7 @@ def generate_log_likelihoods(name_likelihood_file="likelihoods", name_pred_file=
         dict_count_subj_answers = count_subject_answers(subj_answers)
         # compute the log-likelihood that the current participants used random model's strategy, given the distribution
         # of answers for that participant
-        likelihood_random = compute_error_likelihood_random(dict_count_subj_answers)
+        likelihood_random = compute_error_likelihood_random(dict_count_subj_answers, name_pred_file)
         # compute the coherence of the random model
         coherence_random = compute_correct_rate_random(dict_count_subj_answers)
         # store data
@@ -237,8 +273,11 @@ def generate_log_likelihoods(name_likelihood_file="likelihoods", name_pred_file=
     likelihood_df.to_csv(f"{name_likelihood_file}.csv", index=False)
 
 
+################## RFX-BMS ##################
+
 # function adapted from https://github.com/jdtoprug/EpistemicToMProject
-def get_best_models_for_each_subj(name_likelihood_file="likelihoods", name_pred_file="predictions_tom"):
+def get_best_models_for_each_subj(name_likelihood_file="likelihoods", name_pred_file="predictions_tom",
+                                  replace_all=False):
     """
     For each participant, find the model with the best correct rate.
 
@@ -246,9 +285,14 @@ def get_best_models_for_each_subj(name_likelihood_file="likelihoods", name_pred_
     :param name_pred_file: the path the predictions csv file
     :return: a dict storing the likelihoods for each subject-model pair
     """
-    if not os.path.exists(f"{name_likelihood_file}.csv"):
-        generate_log_likelihoods(name_likelihood_file=name_likelihood_file, name_pred_file=name_pred_file)
+    if not os.path.exists(f"{name_likelihood_file}.csv") or replace_all:
+        generate_log_likelihoods(name_likelihood_file=name_likelihood_file, name_pred_file=name_pred_file,
+                                 replace_all=replace_all)
+    pred_df = pd.read_csv(f"{name_pred_file}.csv")
     likelihood_df = pd.read_csv(f"{name_likelihood_file}.csv")
+
+    if SAVE_BOOL:
+        file = open(f"{SUBJ_MODEL_FILE_PATH}.txt", "w")
 
     likelihoods_dict = {}
     correct_rates_dict = {}
@@ -259,6 +303,7 @@ def get_best_models_for_each_subj(name_likelihood_file="likelihoods", name_pred_
 
     all_best_correct_rates = []
     best_correct_rates_per_model = [[] for _ in set(likelihood_df["Model.idx"])]
+    number_choices_best_per_model = {idx:0 for idx in set(likelihood_df["Model.idx"])}
     # get and store the model(s) with the best correct rate for each participant
     for subj_idx, subj in enumerate(set(likelihood_df["Subject.id"])):
         best_correct_rate = 0
@@ -276,7 +321,21 @@ def get_best_models_for_each_subj(name_likelihood_file="likelihoods", name_pred_
 
         for m in best_models:
             best_correct_rates_per_model[m].append(best_correct_rate)
+            number_choices_best_per_model[m] += 1/len(best_models)
 
+        if SAVE_BOOL:
+            file.write(f"{subj_idx}, {subj}\n")
+            file.write(f"{pred_df['Subject.answer'].loc[pred_df['Subject.id'] == subj].values}\n")
+            file.write(f"\t best correct rate: {best_correct_rate}\n")
+            file.write(f"\t best models: {best_models}\n")
+            file.write("\n")
+
+    if SAVE_BOOL:
+        file.close()
+        plot_bar(number_choices_best_per_model, "Frequency of times each model was chosen as best", "Model index",
+                 "Frequency", (0, max(number_choices_best_per_model.values())),
+                 (min(number_choices_best_per_model.keys()), max(number_choices_best_per_model.keys())),
+                 f"{NAME_BAR_PLOT}", rotation_x=0)
     # store the best correct rates per model and all overall best correct rates
     correct_rates_df = pd.concat([pd.DataFrame(best_correct_rates_per_model), pd.DataFrame([all_best_correct_rates])],
                                  sort=False, ignore_index=True).fillna(0)
@@ -285,7 +344,8 @@ def get_best_models_for_each_subj(name_likelihood_file="likelihoods", name_pred_
 
 
 # function adapted from https://github.com/jdtoprug/EpistemicToMProject
-def rfx_bms(name_likelihood_file="likelihoods", name_pred_file="predictions_tom", verbose=False, converge_diff=0.001):
+def rfx_bms(name_likelihood_file="likelihoods", name_pred_file="predictions_tom", replace_all=False, verbose=False,
+            converge_diff=0.001):
     """
     Run RFX-BMS on a model of Cheryl's Puzzle
 
@@ -294,7 +354,8 @@ def rfx_bms(name_likelihood_file="likelihoods", name_pred_file="predictions_tom"
     :param verbose: if True, prints debug statements
     :param converge_diff: if, between iterations, each element in alpha has changed by this value or less, stop iterating
     """
-    logdict = get_best_models_for_each_subj(name_likelihood_file=name_likelihood_file, name_pred_file=name_pred_file)
+    logdict = get_best_models_for_each_subj(name_likelihood_file=name_likelihood_file, name_pred_file=name_pred_file,
+                                            replace_all=replace_all)
     likelihood_df = pd.read_csv(f"{name_likelihood_file}.csv")
 
     # Algorithm for RFX-BMS as detailed in 'Bayesian model selection for group studies' (Stephan et al., 2009)
@@ -378,4 +439,4 @@ def rfx_bms(name_likelihood_file="likelihoods", name_pred_file="predictions_tom"
 
 
 if __name__ == "__main__":
-    rfx_bms()
+    rfx_bms(replace_all=True)

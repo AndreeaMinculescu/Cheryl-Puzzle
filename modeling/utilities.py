@@ -87,6 +87,41 @@ def draw_model(graph, save_file=None):
     # clear plot
     plt.clf()
 
+def plot_bar(data, title_plot, x_label, y_label, y_range, x_range, title_save_file=None, chance_x=None, chance_y=None,
+             rotation_x=90, rotation_y=0, bar_width=0.8):
+    """
+    Generate simple bar plot
+    :param data: data in dictionary format
+    :param title_plot: the title of the plot
+    :param x_label: the label for the x-axis
+    :param y_label: the label for the y-axis
+    :param title_save_file: the name of the save file
+    :param rotation_x: degree of rotation of the labels on the x axis
+    """
+    plt.cla()
+    figure, ax = plt.subplots(nrows=1,
+                              ncols=1,
+                              figsize=(5, 7))
+    ax.bar(list(data.keys()), list(data.values()), edgecolor='black', width=bar_width)
+    ax.set_xlabel(x_label)
+    ax.tick_params(axis='x', rotation=rotation_x)
+    ax.tick_params(axis='y', rotation=rotation_y)
+    ax.set_xticks(list(data.keys()))
+    ax.set_ylabel(y_label)
+    ax.set_yticks(list(data.values()))
+    ax.set_ylim([y_range[0], y_range[1]])
+    ax.set_title(title_plot)
+    if chance_x:
+        ax.vlines(chance_x, ymin=0, ymax=y_range[1], colors="gray", linestyles="dashed", linewidth=3)
+    if chance_y:
+        ax.hlines(chance_y, xmin=x_range[0], xmax=x_range[1], colors="gray", linestyles="dashed", linewidth=3)
+    figure.tight_layout()
+    if title_save_file:
+        figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
+    else:
+        figure.show()
+
+
 
 if __name__ == "__main__":
     pass
