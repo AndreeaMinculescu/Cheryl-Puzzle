@@ -3,6 +3,8 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+
+matplotlib.use('TkAgg')
 matplotlib.rc('font', size=12)
 
 
@@ -14,7 +16,7 @@ def compute_mean_dict(d):
     """
     mean_d = {}
     for key in d.keys():
-        mean_d[key] = [np.nanmean(d[key]), np.std(d[key])]
+        mean_d[key] = round(np.nanmean(d[key]) * 100)
     return mean_d
 
 
@@ -109,8 +111,14 @@ def plot_bar(data, title_plot, x_label, y_label, y_range, x_range, title_save_fi
     :param title_plot: the title of the plot
     :param x_label: the label for the x-axis
     :param y_label: the label for the y-axis
+    :param y_range: range of values on the y-axis
+    :param x_range: range of values on the x-axis
     :param title_save_file: the name of the save file
-    :param rotation_x: degree of rotation of the labels on the x axis
+    :param chance_x: guessing chance values on the x-axis
+    :param chance_y: guessing chance values on the y-axis
+    :param rotation_x: degree of rotation of the labels on the x-axis
+    :param rotation_y: degree of rotation of the labels on the y-axis
+    :param bar_width: width of the bars in the bar plot
     """
     plt.cla()
     figure, ax = plt.subplots(nrows=1,
@@ -142,6 +150,10 @@ def plot_multiple_bars_per_level(data_dict, x_label, title_plot, title_save_file
     :param title_save_file: the name of the save file
     """
     plt.cla()
+    figure, ax = plt.subplots(nrows=1,
+                              ncols=1,
+                              figsize=(6, 7))
+
     n = len(data_dict.keys())
     r = np.arange(n)
     width = 0.2
@@ -153,24 +165,26 @@ def plot_multiple_bars_per_level(data_dict, x_label, title_plot, title_save_file
         bar_temp = plt.bar(r + width * idx, [data_dict[key][v_level] for key in all_keys], width)
         all_bars.append(bar_temp)
 
-    plt.xlabel(x_label)
-    plt.ylabel("Frequency")
-    plt.title(title_plot)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel("Frequency")
+    ax.set_title(title_plot)
 
-    plt.xticks(r + width, all_keys, rotation=90)
-    plt.legend(all_bars, [f"Correct level-{idx + 1} ToM: " + x for (idx, x) in enumerate(all_value_levels)])
-    plt.savefig(f"{title_save_file}.png", bbox_inches='tight')
+    ax.set_xticks(r + width, all_keys, rotation=90)
+    ax.legend(all_bars, [f"{idx}-order puzzle" for idx in ["first", "second", "third", "fourth"]])
+    figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 
 def plot_violin(list_data, x_axis_levels, x_label, y_label, y_range, title_plot, title_save_file, rotation_x=0):
     """
     Generate violin plot
     :param list_data: data in list format
-    :param x_axis_levels: levels on the x axis
+    :param x_axis_levels: levels on the x-axis
     :param x_label: the label for the x-axis
+    :param y_label: the label for the y-axis
+    :param y_range: range of values on the y-axis
     :param title_plot: the title of the plot
     :param title_save_file: the name of the save file
-    :param rotation_x: degree of rotation of the labels on the x axis
+    :param rotation_x: degree of rotation of the labels on the x-axis
     """
     plt.cla()
     figure, ax = plt.subplots(nrows=1,

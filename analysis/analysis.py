@@ -1,12 +1,7 @@
-import glob
 import pandas as pd
 import numpy as np
-import matplotlib
 import re
 from statistics import mean, median
-
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
 from collections import Counter
 from utilities import translate_answer, compute_mean_dict, plot_bar, plot_multiple_bars_per_level, plot_violin
 
@@ -70,16 +65,16 @@ def get_form_data():
     f.close()
 
 
-def plot_accuracy_per_level_and_scenario():
+def plot_accuracy_per_order_and_scenario():
     """
-    For each ToM level and scenario, compute the mean accuracy as
+    For each ToM order and scenario, compute the mean accuracy as
                 # of correct answers/ # of answers
     """
     df = pd.read_csv("All answers_puzzles all trials.csv")
     dict_tom = {1: [], 2: [], 3: [], 4: []}
     dict_scenario = {"birthday": [], "hair": [], "drink": [], "toy": []}
 
-    # for each ToM level and each scenario, check whether answer is correct
+    # for each ToM order (level) and each scenario, check whether answer is correct
     for (idx, row) in df.iterrows():
         dict_tom[row["Level"]].append(row["Is.correct"])
         dict_scenario[row["Scenario"]].append(row["Is.correct"])
@@ -88,16 +83,12 @@ def plot_accuracy_per_level_and_scenario():
     # for readability, sort scenario dict by value
     dict_scenario_means = dict(sorted(compute_mean_dict(dict_scenario).items(), key=lambda item: item[1], reverse=True))
 
-    print(dict_tom)
-    print(dict_tom_means)
-    print(dict_scenario)
-    print(dict_scenario_means)
-
-    plot_bar(dict_tom_means, "Accuracy per ToM Level", "ToM level", "Accuracy (%) over the 8 puzzles", (0, 100),
-             (1, len(dict_tom_means)), title_save_file="plots/acc_per_level", rotation_x=0, chance_y=1/13*100,
+    plot_bar(dict_tom_means, "Accuracy per ToM Order", "ToM order", "Accuracy (%) over the 8 puzzles", (0, 100),
+             (1, len(dict_tom_means)), title_save_file="plots/acc_per_order", rotation_x=0, chance_y=1 / 13 * 100,
              bar_width=0.5)
     plot_bar(dict_scenario_means, "Accuracy per Scenario", "Scenario", "Accuracy (%) over the 8 puzzles", (0, 100),
-             (0, len(dict_scenario_means)-1), title_save_file="plots/acc_per_scen", rotation_x=0, chance_y=1/13*100,
+             (0, len(dict_scenario_means) - 1), title_save_file="plots/acc_per_scen", rotation_x=0,
+             chance_y=1 / 13 * 100,
              bar_width=0.5)
 
 
@@ -106,7 +97,7 @@ def plot_accuracy_per_participant():
     For each participant, compute the mean accuracy over all completed puzzles. Then, plot the frequency of the
     accuracy values in a bar plot.
     """
-    all_accuracies = {x/8 * 100: 0 for x in range(9)}
+    all_accuracies = {x / 8 * 100: 0 for x in range(9)}
     all_answers = pd.read_csv("All answers_puzzles all trials.csv")
     # compute and store all the mean accuracy over all completed puzzles for each participant
     for subject_id in set(all_answers["Subject.id"]):
@@ -117,7 +108,7 @@ def plot_accuracy_per_participant():
 
     plot_bar(all_accuracies, "Distribution of accuracy over participants", "Accuracy (%) over the 8 puzzles",
              "Number of participants", (0, max(all_accuracies.values())), (0, max(all_accuracies.keys())),
-             "plots/distrib_acc_participants", chance_x=1/13*100, rotation_x=0, bar_width=5)
+             "plots/distrib_acc_participants", chance_x=1 / 13 * 100, rotation_x=0, bar_width=5)
 
 
 def count_no_entries_per_participant():
@@ -130,49 +121,38 @@ def count_no_entries_per_participant():
         df_temp = all_answers.loc[all_answers["Subject.id"] == subject_id]
         all_count.append(len(df_temp))
 
-    print(Counter(all_count))
+    print("Number of trials completed: Number of participants", dict(Counter(all_count)))
 
 
 def plot_time_distribution(log_bool=False):
     """
     Plot the log-time distribution of solving a puzzle for:
-        1) each ToM level
+        1) each ToM order
         2) each scenario
-        3) each ToM level x scenario combination
     in three separate violin plots
+
+    :param log_bool: if True, then log-transformed time is plotted
     """
     df = pd.read_csv("All answers_puzzles all trials.csv")
     dict_tom = {1: [], 2: [], 3: [], 4: []}
     dict_scenario = {"birthday": [], "hair": [], "drink": [], "toy": []}
-    dict_interaction = {}
 
-    # for each ToM level, scenario and combination, store the log-transformed times
+    # for each ToM order (level), scenario and combination, store the log-transformed times
     for (idx, row) in df.iterrows():
         time = row["logTime"] if log_bool else row["Time"]
         dict_tom[row["Level"]].append(time)
         # for scenarios, only consider the second block
         if row["Block"] == 2:
             dict_scenario[row["Scenario"]].append(time)
-            try:
-                dict_interaction[f"{row['Scenario']}-{row['Level']}"].append(time)
-            except KeyError:
-                dict_interaction[f"{row['Scenario']}-{row['Level']}"] = [time]
 
     # for readability, sort by mean of values
     dict_scenario_sorted = dict(sorted(dict_scenario.items(), key=lambda item: mean(item[1])))
 
-    print(compute_mean_dict(dict_tom))
-    print(compute_mean_dict(dict_scenario_sorted))
-    print(compute_mean_dict(dict_interaction))
-
     y_axis_label = "Time (log-transformed)" if log_bool else "Time (in seconds)"
-    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "Level of ToM", y_axis_label, (0, 800),
-                "Distribution of Time over ToM Levels", "plots/tom_time_distrib")
+    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "ToM order", y_axis_label, (0, 800),
+                "Distribution of Time over ToM Orders", "plots/tom_time_distrib")
     plot_violin(list(dict_scenario_sorted.values()), list(dict_scenario_sorted.keys()), "Scenario", y_axis_label,
                 (0, 800), "Distribution of Time over Scenarios", "plots/scenario_time_distrib")
-    plot_violin(list(dict_interaction.values()), list(dict_interaction.keys()), "Scenario-ToM level", y_axis_label,
-                (0, 800), "Distribution of Time over Scenarios and ToM Levels", "plots/scenario_level_time_distrib",
-                rotation_x=90)
 
 
 def plot_p_beauty(bin_size=20):
@@ -186,8 +166,6 @@ def plot_p_beauty(bin_size=20):
     df_pb = df[df['Index'].isnull()]
     # count how many participants gave the same answer
     dict_answers = dict(Counter(list(df_pb["Given answer"])))
-    print("mean: ", mean([eval(elem) for elem in list(df_pb["Given answer"])]))
-    print("median: ", median([eval(elem) for elem in list(df_pb["Given answer"])]))
     # find the thresholds for the specified number of bins
     bins = np.linspace(0, 100, bin_size, dtype=int)
     # create a dictionary where the keys are intervals between two extrema of each bin
@@ -205,14 +183,14 @@ def plot_p_beauty(bin_size=20):
                 break
 
     plot_bar(dict_binned_answers, "P-beauty distribution", "Value interval", "Number of participants",
-             (0, max(dict_binned_answers.values())), "plots/p-beauty_distrib")
+             (0, max(dict_binned_answers.values())), (0, len(dict_binned_answers)), "plots/p-beauty_distrib")
 
 
 def plot_distrib_answers():
     """
     For each of the four original birthday puzzles, plot the frequency of all answers in a bar plot
     """
-    df = pd.read_csv("All answers_all.csv")
+    df = pd.read_csv("All answers_puzzles.csv")
     question_bank = pd.read_csv("../interface/question_bank.csv")
     dict_tom = {"I don't know": {'May, 15': 0, 'September, 14': 0, 'September, 15': 0, 'May, 18': 0},
                 "No solution": {'May, 15': 0, 'September, 14': 0, 'September, 15': 0, 'May, 18': 0},
@@ -226,9 +204,9 @@ def plot_distrib_answers():
             transl_key = question_bank.loc[question_bank["IDX"] == row["Index"]]["Translation key"].values[0]
             scenario = question_bank.loc[question_bank["IDX"] == row["Index"]]["Scenario"].values[0]
             try:
-                transl_answer = translate_answer(row["Given answer"].split(", "), scenario, eval(transl_key))
+                transl_answer = translate_answer(row["Given.answer"].split(", "), scenario, eval(transl_key))
             except KeyError:
-                transl_answer = row["Given answer"]
+                transl_answer = row["Given.answer"]
             # then, store it as a given answer for the corresponding original puzzle
             if transl_answer not in dict_tom.keys():
                 dict_tom[transl_answer] = {'May, 15': 0, 'September, 14': 0, 'September, 15': 0, 'May, 18': 0}
@@ -236,15 +214,21 @@ def plot_distrib_answers():
             else:
                 dict_tom[transl_answer][correct_answer] += 1
 
-    sorted_dict_tom = dict(sorted(list(dict_tom.items())[3:]))
-    sorted_dict_tom.update(dict(list(dict_tom.items())[:3]))
-    plot_multiple_bars_per_level(sorted_dict_tom, "Option chosen", "Distribution of answers per puzzle type",
+    # sort dictionary by month and day, in this order
+    key_order = ["May", "June", "July", "August", "September", "Multiple solutions", "No solution", "I don't know"]
+    new_tom_dict = {}
+    for lookup_key in key_order:
+        new_lookup_dict = {key: value for (key, value) in dict_tom.items() if lookup_key in key}
+        new_lookup_dict = dict(sorted(new_lookup_dict.items()))
+        new_tom_dict.update(new_lookup_dict)
+
+    plot_multiple_bars_per_level(new_tom_dict, "Answer selected", "Distribution of answers per puzzle type",
                                  "plots/distrib_answers_puzzle")
 
 
 if __name__ == '__main__':
     get_form_data()
-    plot_accuracy_per_level_and_scenario()
+    plot_accuracy_per_order_and_scenario()
     plot_accuracy_per_participant()
     count_no_entries_per_participant()
     plot_time_distribution()
