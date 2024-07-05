@@ -8,7 +8,7 @@ class Puzzle:
         """
         Class that stores information regarding the design of the puzzle
         """
-        # define states for each ToM level puzzle
+        # define states for each ToM level puzzle as defined in the Cheryl's Puzzle experiment
         self.states_lev_one = [(Month.May, 15), (Month.May, 16), (Month.June, 17), (Month.June, 18),
                                (Month.July, 14), (Month.July, 16), (Month.August, 14), (Month.August, 17),
                                (Month.Sept, 16), (Month.Sept, 18)]
@@ -45,5 +45,4 @@ class Puzzle:
 
 
 if __name__ == "__main__":
-    cb = Puzzle(list_players=["Al", "Be"], visibility=[[True, False], [False, True]])
-    print(cb.announcements_lev_four[0])
+    pass

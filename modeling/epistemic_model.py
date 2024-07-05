@@ -1,5 +1,3 @@
-import random
-
 from utilities import format_text_states, draw_model
 from formula import NOT, KNOW, PropositionalAtom, Operator, PublicAnnouncement
 from solver import Solver
@@ -93,10 +91,38 @@ class EpistemicModel(Solver):
             return True
         return False
 
-    def update_model(self, graph, flag_not_reverse):
+    def update_model(self, graph, flag_not_reverse, draw=False, save_file_name="plots/tmp"):
         """
-        Removes all states that should be removed and updates the uncertainty of the players
+        Marks all states that should be removed and updates the uncertainty of the players
+
+        :param graph: the graph to update
+        :param flag_not_reverse: if True, then statement is negated
+        :param draw: if True then the intermediary Kripke models after each public announcement is drawn and saved to
+        a png
+        :param save_file_name: the path to save the pngs at (applicable if draw is set to True)
+        :return: updated graph
         """
+        # get nodes that should be removed
+        nodes_to_remove = [node for node in self.curr_states.keys() if self.curr_states[node] is flag_not_reverse]
+
+        if draw:
+            # make yellow all nodes to be removed
+            for node in nodes_to_remove:
+                self.init_graph.nodes[node]['node_color'] = 'yellow'
+
+            # for the nodes to be removed, make reflexive arrows white (otherwise, the drawing does not look as
+            # intended)
+            for edge in self.init_graph.edges:
+                if (edge[0] in nodes_to_remove or edge[1] in nodes_to_remove) and edge[0] == edge[1]:
+                    self.init_graph.edges[edge]['color'] = 'white'
+
+            # remove all edges (except reflexive) from and to the nodes to be removed
+            self.init_graph.remove_edges_from([edge for edge in self.init_graph.edges if (edge[0] in nodes_to_remove
+                                               or edge[1] in nodes_to_remove) and edge[0] != edge[1]])
+
+            # draw graph
+            draw_model(self.init_graph, f"{save_file_name}_{UPDATE_COUNT}")
+
         # remove nodes where the public announcement formula does not hold
         graph.remove_nodes_from([node for node in self.curr_states.keys()
                                  if self.curr_states[node] is flag_not_reverse])
@@ -179,6 +205,7 @@ class EpistemicModel(Solver):
         any ToM statement)
         :param cutting_direction: the direction in which knowledge statements are removed by the cutting model until
         the statement is of at most "model_level" ToM level
+        :param flag_not_reverse: if True, then statement is negated
         :param draw: if True then the intermediary Kripke models after each public announcement is drawn and saved to
         a png
         :param save_file_name: the path to save the pngs at (applicable if draw is set to True)
@@ -200,10 +227,7 @@ class EpistemicModel(Solver):
             # update model based on announcement
             self.process_announcement(ann.formula, self.curr_states)
             # update the Kripke graph
-            updated_graph = self.update_model(init_graph, flag_not_reverse)
-            # potentially visualize the updated graph
-            if draw:
-                draw_model(updated_graph, f"{save_file_name}_{UPDATE_COUNT}")
+            updated_graph = self.update_model(init_graph, flag_not_reverse, draw, save_file_name)
 
         return self.get_answer(updated_graph)
 

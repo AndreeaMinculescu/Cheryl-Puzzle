@@ -8,7 +8,7 @@ SEED = 42
 class Solver:
     def __init__(self, max_iter, max_tom_level, curr_tom_level, puzzle):
         """
-        Class that stores all element common to all solvers
+        Class that stores all elements common to all solvers
         """
         # store the maximum number of model iterations per ToM level
         self.max_iter = max_iter
@@ -18,39 +18,16 @@ class Solver:
         self.curr_level = curr_tom_level
         # store the current puzzle object
         self.puzzle = puzzle
-        # generate list of seeds (see the RandomModel class)
-        self.seed_list = self.generate_seeds()
 
         # compute all players' uncertainty
         self.all_uncertainty = None
+        self.init_graph = self.generate_full_model()
 
     def run_model_once(self, **kwargs):
         """
         All models that inherit from Solver must have a run_model_once function implemented
         """
         raise NotImplementedError
-
-    def generate_seeds(self):
-        """
-        Generates a dictionary of seed values per ToM level per iteration (used in the RandomModel class)
-
-        :return: dictionary with seeds
-        """
-        # initialize dictionary
-        seed_dict = {}
-
-        # set random seed (set as hyper-parameter)
-        random.seed(SEED)
-        # generate one seed per ToM level
-        seed_per_lever = random.sample(range(0, 10000), self.max_tom_level)
-        # for each ToM level...
-        for lev in range(self.max_tom_level):
-            # set seed
-            random.seed(seed_per_lever[lev])
-            # generate one seed per model iteration
-            seed_dict[lev] = random.sample(range(0, 10000), self.max_iter)
-
-        return seed_dict
 
     def compute_uncertainty(self, include_bidirectional=True, include_reflexive=True):
         """
@@ -147,7 +124,7 @@ class Solver:
             y_pos = self.puzzle.all_states[self.curr_level][i][0].value
             # ...and add a node to the graph
             G.add_node(index[i], state=format_text_states(self.puzzle.all_states[self.curr_level][i]),
-                       pos=(x_pos, y_pos))
+                       pos=(x_pos, y_pos), node_color="white")
 
         # for each player...
         for player_idx in range(len(self.puzzle.players)):
