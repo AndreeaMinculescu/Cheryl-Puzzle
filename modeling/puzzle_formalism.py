@@ -1,6 +1,5 @@
-from utilities import Month, format_text_states
+from utilities import Month
 from formula import NOT, KNOW, PropositionalAtom, PublicAnnouncement
-import networkx as nx
 
 
 class Puzzle:

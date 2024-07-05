@@ -8,8 +8,8 @@ import math
 import scipy
 from utilities import plot_bar, plot_coherence
 
-CONFIG = "cut_1_lrrl_2_lr_lev4_all" # identification string for plots with the same configuration
-SAVE_BOOL = False
+CONFIG = "cut_1_lrrl_2_lr_all" # identification string for plots with the same configuration
+SAVE_BOOL = True
 ################## MODEL PREDICTIONS ##################
 
 

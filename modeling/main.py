@@ -12,7 +12,7 @@ MAX_ITERATIONS = 1
 # the type of the model (only epistemic model implemented)
 MODEL_TYPE = EpistemicModel
 # dictionary of keyword argument for the run_model_once function (NOTE: function must be implemented for all model)
-KWARGS = {EpistemicModel: {"model_level": 2, "cutting_direction": "rl", "draw":True, "save_file_name":"./plots/tmp"}}
+KWARGS = {EpistemicModel: {"model_level": 2, "cutting_direction": "rl", "draw":False, "save_file_name":"./plots/tmp"}}
 # path to file to save results in
 FILE_PATH = "results.txt"
 

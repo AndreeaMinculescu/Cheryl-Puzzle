@@ -195,7 +195,6 @@ def plot_violin(list_data, list_rand, x_label, y_label, x_range, y_range, title_
                               ncols=1,
                               figsize=(5, 7))
 
-    print(mean(list_data), median(list_data))
     ax.violinplot(list_data, [0], points=200, vert=False, widths=1.1,
                   showmeans=True, showextrema=True, showmedians=True, bw_method=0.5)
 
