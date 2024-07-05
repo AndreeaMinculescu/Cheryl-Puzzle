@@ -12,6 +12,8 @@ class FormApp:
         :param master: the window
         :param puzzle_answers: list of answers given to puzzle (to be merged with form answers)
         :param subject_id: unique subject id (to be saved with contact information)
+        :param reward_sum: base reward sum for participating in the experiment
+        :param reward_idx: index of the puzzle randomly selected to decide whether to apply monetary bonus
         """
         self.master = master
         self.dict_puzzle_answers = puzzle_answers

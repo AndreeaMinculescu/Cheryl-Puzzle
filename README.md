@@ -31,11 +31,11 @@ The code for the statistical analysis can be found in the ``analysis`` folder.
 * ``All answers_all.csv`` - the aggregated participant answers from ``all_results``
 * ``All answers_puzzles.csv`` - same as ``All answers_all.csv`` but with the p-beauty answers removed and additional
 helpful variables added (see ``analysis_stat.Rmd`` for code)
-* ``All answers_puzzles all trails.csv`` - same as ``All answers_puzzles.csv`` but only with the 42 participants
+* ``All answers_puzzles all trials.csv`` - same as ``All answers_puzzles.csv`` but only with the 42 participants
 who finished all eight trials within the specified amount of time(see ``analysis_stat.Rmd`` for code)
-* ``analysys_stat.Rmd`` - R script to conduct the statistical analysis. Using RStudio to open the file is strongly recommended.
-* ``analysys_stat.html`` - HTML rendition of the code and results in ``analysis_stat.Rmd``. Opening this file is recommended if the user is not interested in modifying the code.
-* ``analysys.py`` - code used to generate the plots in ``plots``
+* ``analysis_stat.Rmd`` - R script to conduct the statistical analysis. Using RStudio to open the file is strongly recommended.
+* ``analysis_stat.html`` - HTML rendition of the code and results in ``analysis_stat.Rmd``. Opening this file is recommended if the user is not interested in modifying the code.
+* ``analysis.py`` - code used to generate the plots in ``plots``
 * ``utilities.py`` - useful functions not part of the basic workflow and matplotlib functions for plotting
 
 ## The modeling

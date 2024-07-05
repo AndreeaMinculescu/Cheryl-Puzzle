@@ -36,7 +36,7 @@ class PracticeApp:
     def show_next_page(self, idx):
         """
         Display the next form page given the order defined in the init function
-        :param idx: the page to be displayes
+        :param idx: the page to be displayed
         """
         self.pages[self.current_page].frame.grid_forget()
         self.current_page = idx

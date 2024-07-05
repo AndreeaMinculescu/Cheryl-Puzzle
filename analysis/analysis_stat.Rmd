@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 rm(list = ls())
-# make sure to set the correct working direcory
+# make sure to set the correct working directory
 setwd("C://Users//andre//Desktop//Univ stuff//Year 2//Master Project//Cheryl-Puzzle//analysis")
 # Load data:
 dat <- read.csv("All answers_all.csv", na.strings=c("","NA"))

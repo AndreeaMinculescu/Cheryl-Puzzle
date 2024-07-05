@@ -6,5 +6,4 @@ teddy bear: https://i.pinimg.com/originals/8f/ce/8f/8fce8f37a85921d4d1355058c51f
 
 hair dresser logo: https://creativebits.org/wp-content/uploads/2023/03/tutti-hairdresser-1.png
 
-puzzle: https://www.mccormick.northwestern.edu/images/news/2022/06/solving-the-puzzle-of-2d-disorder-social.jpg
-
+warning: https://github.com/Akascape/CTkMessagebox/blob/main/CTkMessagebox/icons/warning.png

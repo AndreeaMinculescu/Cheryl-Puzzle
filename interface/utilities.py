@@ -92,7 +92,7 @@ def write_all_to_txt():
 
 def compute_reward(answers_list):
     """
-    Compute monetary reward: randomly select puzzle and add 0.25 euros to the base reward of 7.5 euros if the
+    Compute monetary reward: randomly select puzzle and add 2.5 euros to the base reward of 7.5 euros if the
     participant answered correctly
     :param answers_list: list of answers given by participants
     :return: the index of the random puzzle, the monetary reward in euros
