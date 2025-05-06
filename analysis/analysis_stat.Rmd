@@ -1,5 +1,5 @@
 ---
-title: "MSc Thesis Analysis"
+title: "Cheryl's Puzzle Analysis"
 author: "Andreea Minculescu"
 date: "`r Sys.Date()`"
 output: html_document
@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 rm(list = ls())
 # make sure to set the correct working directory
-setwd("C://Users//andre//Desktop//Univ stuff//Year 2//Master Project//Cheryl-Puzzle//analysis")
+setwd("~/Desktop/Cheryl Puzzle/Cheryl-Puzzle/analysis")
 # Load data:
 dat <- read.csv("All answers_all.csv", na.strings=c("","NA"))
 
@@ -55,6 +55,7 @@ for (part in unique(dat_ans$Subject.id)){
 
 # create variable to store whether answer is correct: 1 is correct, 0 is wrong
 dat_ans$Is.correct <- ifelse(dat_ans$Correct.answer == dat_ans$Given.answer, 1, 0)
+dat_ans$Is.correct <- as.factor(dat_ans$Is.correct)
 
 # write.csv(dat_ans, "All answers_puzzles.csv", row.names=FALSE)
 ```
@@ -72,6 +73,12 @@ for (part in unique(dat_ans$Subject.id)){
 dat_ans_eight_trials <- dat_ans[!dat_ans$Subject.id %in% list_remove_part, ]
 
 # write.csv(dat_ans_eight_trials, "All answers_puzzles all trials.csv", row.names=FALSE)
+```
+
+```{r}
+# separate dataframe for participants who did not know puzzles
+dat_not_know <- subset(dat_ans, dat_ans$Know.puzzle. == "No")
+dat_not_know_eight_trials <- subset(dat_ans_eight_trials, dat_ans$Know.puzzle. == "No")
 ```
 
 ```{r}
@@ -119,6 +126,39 @@ res.kruskal.level
 dunnTest(Time ~ Level, data=dat_ans_eight_trials)
 ```
 
+```{r}
+# check whether time to solve puzzles for different levels of ToM is different for participants who did not know puzzles
+# result: only level 3-level 4 do not differ
+res.aov.level <-aov(logTime ~ Level, data = dat_not_know_eight_trials)
+summary(res.aov.level)
+
+TukeyHSD(res.aov.level)
+
+# check ANOVA assumptions -> NOT met
+aov.residuals.level <- residuals(object = res.aov.level)
+# test that the variance is homogenous
+# result: variance is homogenous
+plot(aov.residuals.level)
+leveneTest(logTime ~ Level, data = dat_not_know_eight_trials)
+
+# test for normality
+# result: it is not normal
+qqnorm(aov.residuals.level,
+       pch=16, col=alpha("#FFcc00"), bty='n')
+qqline(aov.residuals.level)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov.residuals.level )
+```
+
+```{r}
+# alternative for ANOVA when assumptions not met
+# results: all pairs of levels other than levels 3-4 not significant
+res.kruskal.level <- kruskal.test(Time ~ Level, data = dat_not_know_eight_trials)
+res.kruskal.level
+
+dunnTest(Time ~ Level, data=dat_not_know_eight_trials)
+```
+
 
 ### Check whether time to solve puzzles for different scenarios is different
 
@@ -156,6 +196,49 @@ res.kruskal.scen <- kruskal.test(Time ~ Scenario, data = dat_ans_blocktwo)
 res.kruskal.scen
 
 dunnTest(Time ~ Scenario, data=dat_ans_blocktwo)
+```
+
+```{r}
+# check whether time to solve puzzles for different level of ToM in block 2 and for participants who did not know the puzzle is different
+# result: not significant
+dat_ans_blocktwo_not_know <- subset(dat_not_know_eight_trials, dat_not_know_eight_trials$Block == 2)
+
+res.aov.scen <-aov(logTime ~ Scenario, data = dat_ans_blocktwo_not_know)
+summary(res.aov.scen)
+
+TukeyHSD(res.aov.scen)
+
+# check ANOVA assumptions -> NOT met
+aov.residuals.scen <- residuals(object = res.aov.scen)
+# test that the variance is homogenous
+# result: variance is homogenous
+plot(aov.residuals.scen)
+leveneTest(logTime ~ Scenario, data = dat_ans_blocktwo_not_know)
+
+# test for normality
+# result: it is not normal
+qqnorm(aov.residuals.scen,
+       pch=16, col=alpha("#FFcc00"), bty='n')
+qqline(aov.residuals.scen)
+# Run Shapiro-Wilk test
+shapiro.test(x = aov.residuals.scen )
+```
+
+```{r}
+# alternative for ANOVA when assumptions not met
+# results: still not significant
+res.kruskal.scen <- kruskal.test(Time ~ Scenario, data = dat_ans_blocktwo_not_know)
+res.kruskal.scen
+
+dunnTest(Time ~ Scenario, data=dat_ans_blocktwo_not_know)
+```
+
+
+
+### Check whether time for correct answers differs from incorrect answers per level of ToM
+```{r}
+res.aov.int1 <- aov(logTime ~ Is.correct * Level, data = dat_ans)
+summary(res.aov.int1)
 ```
 
 
@@ -203,6 +286,22 @@ round(contrib.chisq.level, 3)
 corrplot(contrib.chisq.level, is.cor = FALSE)
 ```
 
+```{r}
+# http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r
+# check whether accuracy differs across levels of ToM for participants who did not know the pizzle
+# results: there is significant difference and levels 1 and 4 contribute the most
+acc.table.level <- table(dat_not_know_eight_trials$Is.correct, dat_not_know_eight_trials$Level)
+
+res.chisq.level <- chisq.test(acc.table.level)
+res.chisq.level
+
+# Contibution in percentage (%)
+contrib.chisq.level <- 100*res.chisq.level$residuals^2/res.chisq.level$statistic
+round(contrib.chisq.level, 3)
+# Visualize the contribution
+corrplot(contrib.chisq.level, is.cor = FALSE)
+```
+
 ### Check whether accuracy differs across scenarios
 
 ```{r}
@@ -210,6 +309,22 @@ corrplot(contrib.chisq.level, is.cor = FALSE)
 # check whether accuracy differs across scenarios
 # results: there is not significant difference
 acc.table.scen <- table(dat_ans_blocktwo$Is.correct, dat_ans_blocktwo$Scenario)
+
+res.chisq.scen <- chisq.test(acc.table.scen)
+res.chisq.scen
+
+# Contibution in percentage (%)
+contrib.chisq.scen <- 100*res.chisq.scen$residuals^2/res.chisq.scen$statistic
+round(contrib.chisq.scen, 3)
+# Visualize the contribution
+corrplot(contrib.chisq.scen, is.cor = FALSE)
+```
+
+```{r}
+# http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r
+# check whether accuracy differs across scenarios for participants who did not know the puzzle
+# results: there is not significant difference
+acc.table.scen <- table(dat_ans_blocktwo_not_know$Is.correct, dat_ans_blocktwo_not_know$Scenario)
 
 res.chisq.scen <- chisq.test(acc.table.scen)
 res.chisq.scen

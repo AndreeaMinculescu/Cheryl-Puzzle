@@ -103,35 +103,41 @@ def get_level_and_scen():
 
 #########################PLOTTING HELP FUNCTIONS#################################################
 
-def plot_bar(data, title_plot, x_label, y_label, y_range, x_range, title_save_file, chance_x=None, chance_y=None,
-             rotation_x=90, rotation_y=0, bar_width=0.8):
+def plot_bar(data_x, data_y, title_plot, x_label, y_label, y_range, x_range, title_save_file, orientation='vertical',
+             chance_x=None, chance_y=None, rotation_x=90, rotation_y=0, bar_size=0.5):
     """
     Generate simple bar plot
-    :param data: data in dictionary format
+    :param data_x: data on the x-axis
+    :param data_y: data on the y-axis
     :param title_plot: the title of the plot
     :param x_label: the label for the x-axis
     :param y_label: the label for the y-axis
     :param y_range: range of values on the y-axis
     :param x_range: range of values on the x-axis
     :param title_save_file: the name of the save file
+    :param orientation: if "vertical" then creates vertical bars, if "horizontal" then creates horizontal bars
     :param chance_x: guessing chance values on the x-axis
     :param chance_y: guessing chance values on the y-axis
     :param rotation_x: degree of rotation of the labels on the x-axis
     :param rotation_y: degree of rotation of the labels on the y-axis
-    :param bar_width: width of the bars in the bar plot
+    :param bar_size: width of the bars for vertical bar plots or height of the bars for horizontal bar plots
     """
     plt.cla()
     figure, ax = plt.subplots(nrows=1,
                               ncols=1,
-                              figsize=(5, 7))
-    ax.bar(list(data.keys()), list(data.values()), edgecolor='black', width=bar_width)
+                              figsize=(6, 2.5))
+    if orientation == "vertical":
+        ax.bar(data_x, data_y, edgecolor='black', width=bar_size)
+    elif orientation == "horizontal":
+        ax.barh(data_y, data_x, edgecolor='black', height=bar_size)
     ax.set_xlabel(x_label)
     ax.tick_params(axis='x', rotation=rotation_x)
     ax.tick_params(axis='y', rotation=rotation_y)
-    ax.set_xticks(list(data.keys()))
+    ax.set_xticks(data_x)
     ax.set_ylabel(y_label)
-    ax.set_yticks(list(data.values()))
-    ax.set_ylim([y_range[0], y_range[1]])
+    ax.set_yticks(data_y)
+    ax.set_ylim([y_range[0]-0.25, y_range[1] + 0.25])
+    ax.set_xlim([x_range[0], x_range[1]])
     ax.set_title(title_plot)
     if chance_x:
         ax.vlines(chance_x, ymin=0, ymax=y_range[1], colors="gray", linestyles="dashed", linewidth=3)
@@ -174,31 +180,49 @@ def plot_multiple_bars_per_level(data_dict, x_label, title_plot, title_save_file
     figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 
-def plot_violin(list_data, x_axis_levels, x_label, y_label, y_range, title_plot, title_save_file, rotation_x=0):
+def plot_violin(list_data, x_axis_levels, y_axis_levels, x_label, y_label, x_range, y_range, title_plot,
+                title_save_file, vertical, rotation_x=0, rotation_y=0):
     """
     Generate violin plot
     :param list_data: data in list format
     :param x_axis_levels: levels on the x-axis
+    :param y_axis_levels: levels on the y-axis
     :param x_label: the label for the x-axis
     :param y_label: the label for the y-axis
+    :param x_range: range of values on the x-axis
     :param y_range: range of values on the y-axis
     :param title_plot: the title of the plot
     :param title_save_file: the name of the save file
+    :param vertical: if True, then creates vertical violin plots, otherwise horizontal
     :param rotation_x: degree of rotation of the labels on the x-axis
+    :param rotation_y: degree of rotation of the labels on the y-axis
     """
     plt.cla()
     figure, ax = plt.subplots(nrows=1,
                               ncols=1,
-                              figsize=(5, 7))
+                              figsize=(6, 1.75))
 
-    ax.violinplot(list_data, list(range(len(x_axis_levels))), showmeans=True, showextrema=True)
+    if vertical:
+        ax.violinplot(list_data, list(range(len(x_axis_levels))), vert=vertical, showmeans=True, showextrema=True)
+    else:
+        ax.violinplot(list_data, list(range(len(y_axis_levels))), vert=vertical, showmeans=True, showextrema=True)
     ax.tick_params(axis='x', rotation=rotation_x)
-    ax.set_xticks(list(range(len(x_axis_levels))))
-    ax.set_xticklabels(x_axis_levels)
+    ax.tick_params(axis='y', rotation=rotation_y)
+
+    if x_axis_levels:
+        ax.set_xticks(list(range(len(x_axis_levels))))
+        ax.set_xticklabels(x_axis_levels)
+    if y_axis_levels:
+        ax.set_yticks(list(range(len(y_axis_levels))))
+        ax.set_yticklabels(y_axis_levels)
     ax.set_title(title_plot)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    ax.set_ylim([y_range[0], y_range[1]])
+
+    if x_range:
+        ax.set_xlim([x_range[0], x_range[1]])
+    if y_range:
+        ax.set_ylim([y_range[0], y_range[1]])
     figure.savefig(f"{title_save_file}.png", bbox_inches='tight')
 
 

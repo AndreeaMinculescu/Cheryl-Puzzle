@@ -65,10 +65,12 @@ def get_form_data():
     f.close()
 
 
-def plot_accuracy_per_order_and_scenario():
+def plot_accuracy_per_order_and_scenario(orientation="vertical"):
     """
     For each ToM order and scenario, compute the mean accuracy as
                 # of correct answers/ # of answers
+
+    :param orientation: if "vertical" then creates vertical bars, if "horizontal" then creates horizontal bars
     """
     df = pd.read_csv("All answers_puzzles all trials.csv")
     dict_tom = {1: [], 2: [], 3: [], 4: []}
@@ -77,19 +79,19 @@ def plot_accuracy_per_order_and_scenario():
     # for each ToM order (level) and each scenario, check whether answer is correct
     for (idx, row) in df.iterrows():
         dict_tom[row["Level"]].append(row["Is.correct"])
-        dict_scenario[row["Scenario"]].append(row["Is.correct"])
+        if row["Block"] == 2:
+            dict_scenario[row["Scenario"]].append(row["Is.correct"])
 
     dict_tom_means = compute_mean_dict(dict_tom)
     # for readability, sort scenario dict by value
     dict_scenario_means = dict(sorted(compute_mean_dict(dict_scenario).items(), key=lambda item: item[1], reverse=True))
 
-    plot_bar(dict_tom_means, "Accuracy per ToM Order", "ToM order", "Accuracy (%) over the 8 puzzles", (0, 100),
-             (1, len(dict_tom_means)), title_save_file="plots/acc_per_order", rotation_x=0, chance_y=1 / 13 * 100,
-             bar_width=0.5)
-    plot_bar(dict_scenario_means, "Accuracy per Scenario", "Scenario", "Accuracy (%) over the 8 puzzles", (0, 100),
-             (0, len(dict_scenario_means) - 1), title_save_file="plots/acc_per_scen", rotation_x=0,
-             chance_y=1 / 13 * 100,
-             bar_width=0.5)
+    plot_bar(list(dict_tom_means.values()), list(dict_tom_means.keys()), "Accuracy per ToM Order", "Accuracy (%) over the 8 puzzles", "ToM order",
+             (1, len(dict_tom_means)), (0, 100), title_save_file="plots_paper/acc_per_order", orientation=orientation,
+             rotation_x=0, chance_x=1 / 12 * 100, bar_size=0.3)
+    plot_bar(list(dict_scenario_means.values()), list(dict_scenario_means.keys()), "Accuracy per Scenario", "Accuracy (%) over the 8 puzzles", "Scenario",
+             (0, len(dict_scenario_means) - 1), (0, 100), title_save_file="plots_paper/acc_per_scen", orientation=orientation,
+             rotation_x=0, chance_x=1 / 12 * 100, bar_size=0.3, rotation_y=45)
 
 
 def plot_accuracy_per_participant():
@@ -106,9 +108,10 @@ def plot_accuracy_per_participant():
         accuracy = no_correct_answers / len(df_temp) * 100
         all_accuracies[accuracy] += 1
 
-    plot_bar(all_accuracies, "Distribution of accuracy over participants", "Accuracy (%) over the 8 puzzles",
-             "Number of participants", (0, max(all_accuracies.values())), (0, max(all_accuracies.keys())),
-             "plots/distrib_acc_participants", chance_x=1 / 13 * 100, rotation_x=0, bar_width=5)
+    plot_bar(list(all_accuracies.keys()), list(all_accuracies.values()), "Distribution of Accuracy Over Participants",
+             "Accuracy (%) over the 8 puzzles", "Number of participants", (0, max(all_accuracies.values())),
+             (0, max(all_accuracies.keys())), "plots_paper/distrib_acc_participants", chance_x=1 / 12 * 100,
+             rotation_x=0, bar_size=3)
 
 
 def count_no_entries_per_participant():
@@ -124,7 +127,7 @@ def count_no_entries_per_participant():
     print("Number of trials completed: Number of participants", dict(Counter(all_count)))
 
 
-def plot_time_distribution(log_bool=False):
+def plot_time_distribution(log_bool=False, vertical=True):
     """
     Plot the log-time distribution of solving a puzzle for:
         1) each ToM order
@@ -132,6 +135,7 @@ def plot_time_distribution(log_bool=False):
     in three separate violin plots
 
     :param log_bool: if True, then log-transformed time is plotted
+    :param vertical: if True, then creates vertical violin plots, otherwise horizontal
     """
     df = pd.read_csv("All answers_puzzles all trials.csv")
     dict_tom = {1: [], 2: [], 3: [], 4: []}
@@ -149,10 +153,11 @@ def plot_time_distribution(log_bool=False):
     dict_scenario_sorted = dict(sorted(dict_scenario.items(), key=lambda item: mean(item[1])))
 
     y_axis_label = "Time (log-transformed)" if log_bool else "Time (in seconds)"
-    plot_violin(list(dict_tom.values()), list(dict_tom.keys()), "ToM order", y_axis_label, (0, 800),
-                "Distribution of Time over ToM Orders", "plots/tom_time_distrib")
-    plot_violin(list(dict_scenario_sorted.values()), list(dict_scenario_sorted.keys()), "Scenario", y_axis_label,
-                (0, 800), "Distribution of Time over Scenarios", "plots/scenario_time_distrib")
+    plot_violin(list(dict_tom.values()), None, list(dict_tom.keys()), y_axis_label, "ToM order", (0, 800), None,
+                "Distribution of Time over ToM Orders", "plots_paper/tom_time_distrib", vertical)
+    plot_violin(list(dict_scenario_sorted.values()), None, list(dict_scenario_sorted.keys()), y_axis_label, "Scenario",
+                (0, 800), None, "Distribution of Time over Scenarios", "plots_paper/scenario_time_distrib", vertical,
+                rotation_y=45)
 
 
 def plot_p_beauty(bin_size=20):
@@ -182,8 +187,9 @@ def plot_p_beauty(bin_size=20):
                 dict_binned_answers[str_binned_interval] += dict_answers[ans]
                 break
 
-    plot_bar(dict_binned_answers, "P-beauty distribution", "Value interval", "Number of participants",
-             (0, max(dict_binned_answers.values())), (0, len(dict_binned_answers)), "plots/p-beauty_distrib")
+    plot_bar(list(dict_binned_answers.keys()), list(dict_binned_answers.values()), "P-beauty Answer Distribution",
+             "Value interval", "Number of participants", (0, max(dict_binned_answers.values())),
+             (0, len(dict_binned_answers)), "plots_paper/p-beauty_distrib", bar_size=0.5)
 
 
 def plot_distrib_answers():
@@ -228,9 +234,10 @@ def plot_distrib_answers():
 
 if __name__ == '__main__':
     get_form_data()
-    plot_accuracy_per_order_and_scenario()
+    plot_accuracy_per_order_and_scenario(orientation="horizontal")
     plot_accuracy_per_participant()
     count_no_entries_per_participant()
-    plot_time_distribution()
+    plot_time_distribution(vertical=False)
     plot_p_beauty()
     plot_distrib_answers()
+
