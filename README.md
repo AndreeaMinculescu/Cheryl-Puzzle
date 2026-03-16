@@ -165,4 +165,5 @@ _Manuscript in preparation_
 The modeling and analysis code was inspired by the following work:
 
 J.D. Top, C. Jonker, R. Verbrugge, and H. de Weerd. Predictive theory of mind models based on public announcement logic. In Nina Gierasimczuk and Fernando R. Vel ́azquez-Quesada, editors, _Dynamic Logic. New Trends and Applications: 5th International Workshop, DaL ́ı 2023_, volume 14401, pages 85–103. Springer, 2023. 10.1007/978-3-031-51777-8 6.
-    Code repository: https://github.com/jdtoprug/EpistemicToMProject
+
+Code repository: https://github.com/jdtoprug/EpistemicToMProject
