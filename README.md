@@ -149,16 +149,20 @@ The code for the modeling and the analysis of the model fit can be found in the 
 
 ## Papers associated with this repository
 
-Experiment design:\\
-Minculescu, A., Top, J.D., Verbrugge, R., de Weerd, H. (2025). How well do people perform on novel logic puzzles requiring higher-order theory of mind? D. Barner, N.R. Bramley, A. Ruggeri, & C.M. Walker (Eds.), _Proceedings of the 47th Annual Conference of the Cognitive Science Society_ (pp. 3844–3851).
+Experiment design:
 
-Computational modeling:
-_Manuscript in preparation_
+Minculescu, A., Top, J.D., Verbrugge, R., de Weerd, H. (2025). How well do people perform on novel logic puzzles requiring higher-order theory of mind? D. Barner, N.R. Bramley, A. Ruggeri, & C.M. Walker (Eds.), _Proceedings of the 47th Annual Conference of the Cognitive Science Society_ (pp. 3844–3851).
 
 ---
 
+Computational modeling:
+
+_Manuscript in preparation_
+
+
 ## Related work and methodological inspiration
 
-The modeling and analysis code was inspired by the following work:\\
+The modeling and analysis code was inspired by the following work:
+
 J.D. Top, C. Jonker, R. Verbrugge, and H. de Weerd. Predictive theory of mind models based on public announcement logic. In Nina Gierasimczuk and Fernando R. Vel ́azquez-Quesada, editors, _Dynamic Logic. New Trends and Applications: 5th International Workshop, DaL ́ı 2023_, volume 14401, pages 85–103. Springer, 2023. 10.1007/978-3-031-51777-8 6.
     Code repository: https://github.com/jdtoprug/EpistemicToMProject
